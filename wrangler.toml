@@ -1,0 +1,13 @@
+name = "eats"
+compatibility_date = "2025-01-01"
+
+[build]
+command = "pnpm build"
+directory = "dist"
+
+[[build.environment_variables]]
+name = "NODE_VERSION"
+value = "24"
+
+# Cloudflare Pages configuration
+pages_build_output_dir = "dist"
