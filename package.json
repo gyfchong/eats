@@ -9,7 +9,10 @@
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier",
-    "check": "prettier --write . && eslint --fix"
+    "check": "prettier --write . && eslint --fix",
+    "deploy:convex": "pnpm exec convex deploy",
+    "deploy:cloudflare": "wrangler pages deploy dist --project-name eats",
+    "deploy": "pnpm run build && pnpm run deploy:convex && pnpm run deploy:cloudflare"
   },
   "dependencies": {
     "@convex-dev/react-query": "0.0.0-alpha.11",
