@@ -54,6 +54,7 @@ export const add = mutation({
     name: v.optional(v.string()),
     cuisine: v.optional(v.string()),
     ingredients: v.array(v.string()),
+    mealTypes: v.array(v.string()),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -68,6 +69,7 @@ export const add = mutation({
       cuisine: args.cuisine,
       isFavorite: false, // Default to false
       ingredients: args.ingredients,
+      mealTypes: args.mealTypes,
       notes: args.notes,
     })
   },
@@ -83,6 +85,7 @@ export const update = mutation({
     name: v.optional(v.string()),
     cuisine: v.optional(v.string()),
     ingredients: v.array(v.string()),
+    mealTypes: v.array(v.string()),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -102,6 +105,7 @@ export const update = mutation({
       name: args.name,
       cuisine: args.cuisine,
       ingredients: args.ingredients,
+      mealTypes: args.mealTypes,
       notes: args.notes,
     })
   },

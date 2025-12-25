@@ -1,30 +1,36 @@
-import type { FieldApi } from '@tanstack/react-form'
-import { useStore } from '@tanstack/react-store'
 import { Plus, X } from 'lucide-react'
+import type { Doc } from '~convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { StarRating } from '~/components/StarRating'
 
-interface Dish {
-  name: string
-  rating?: number
-}
+type Dish = Doc<'restaurants'>['dishes'][number]
 
 interface DynamicDishListProps {
-  field: FieldApi<any, any, any, any, Dish[]>
+  field: {
+    state: {
+      value: Dish[]
+      meta: {
+        isTouched: boolean
+        errors: Array<string | { toString(): string } | undefined>
+      }
+    }
+    handleChange: (value: Dish[]) => void
+    handleBlur: () => void
+  }
   label?: string
 }
 
 export function DynamicDishList({ field, label = 'Dishes' }: DynamicDishListProps) {
-  const items = useStore(field.store, (state) => state.value || [])
+  const items = field.state.value || []
 
   const addItem = () => {
     field.handleChange([...items, { name: '', rating: undefined }])
   }
 
   const removeItem = (index: number) => {
-    const newItems = items.filter((_, i) => i !== index)
+    const newItems = items.filter((_: Dish, i: number) => i !== index)
     field.handleChange(newItems)
   }
 
@@ -54,7 +60,7 @@ export function DynamicDishList({ field, label = 'Dishes' }: DynamicDishListProp
         {items.length === 0 ? (
           <p className="text-sm text-muted-foreground">No dishes yet. Click "Add" to create one.</p>
         ) : (
-          items.map((item, index) => (
+          items.map((item: Dish, index: number) => (
             <div key={index} className="flex gap-2 items-end">
               <div className="flex-1">
                 <Input
@@ -81,13 +87,15 @@ export function DynamicDishList({ field, label = 'Dishes' }: DynamicDishListProp
         )}
       </div>
 
-      {useStore(field.store, (state) => state.meta.isTouched && state.meta.errors.length > 0) && (
+      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <div className="space-y-1">
-          {useStore(field.store, (state) => state.meta.errors).map((error) => (
-            <div key={typeof error === 'string' ? error : error.toString()} className="text-sm text-red-500 font-bold">
-              {typeof error === 'string' ? error : error.toString()}
-            </div>
-          ))}
+          {field.state.meta.errors.map((error) =>
+            error ? (
+              <div key={typeof error === 'string' ? error : error.toString()} className="text-sm text-red-500 font-bold">
+                {typeof error === 'string' ? error : error.toString()}
+              </div>
+            ) : null
+          )}
         </div>
       )}
     </div>

@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '~convex/_generated/api'
-import type { Id } from '~convex/_generated/dataModel'
+import type { Doc, Id } from '~convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
 import { Switch } from '~/components/ui/switch'
 import { Label } from '~/components/ui/label'
@@ -17,7 +17,7 @@ export const Route = createFileRoute('/restaurants/')({
 function RestaurantsList() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [editingRestaurant, setEditingRestaurant] = useState(null)
+  const [editingRestaurant, setEditingRestaurant] = useState<Doc<'restaurants'> | undefined>(undefined)
 
   const { data: restaurants } = useSuspenseQuery(
     convexQuery(api.restaurants.list, {
@@ -74,11 +74,11 @@ function RestaurantsList() {
         open={isAddModalOpen || !!editingRestaurant}
         onClose={() => {
           setIsAddModalOpen(false)
-          setEditingRestaurant(null)
+          setEditingRestaurant(undefined)
         }}
         onSaved={() => {
           setIsAddModalOpen(false)
-          setEditingRestaurant(null)
+          setEditingRestaurant(undefined)
         }}
       />
     </div>

@@ -2060,6 +2060,7 @@ export const seedRecipes = mutation({
         cuisine: recipe.cuisine,
         isFavorite: recipe.isFavorite,
         ingredients: recipe.ingredients,
+        mealTypes: (recipe as any).mealTypes || [],
         notes: recipe.notes,
       })
       insertedIds.push(id)

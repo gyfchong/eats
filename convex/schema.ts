@@ -8,6 +8,7 @@ export default defineSchema({
     cuisine: v.optional(v.string()),
     isFavorite: v.boolean(),
     ingredients: v.array(v.string()),
+    mealTypes: v.array(v.string()),
     notes: v.optional(v.string()),
   }),
 

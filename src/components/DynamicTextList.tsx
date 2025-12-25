@@ -1,25 +1,33 @@
-import type { FieldApi } from '@tanstack/react-form'
-import { useStore } from '@tanstack/react-store'
 import { Plus, X } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 
 interface DynamicTextListProps {
-  field: FieldApi<any, any, any, any, string[]>
+  field: {
+    state: {
+      value: string[]
+      meta: {
+        isTouched: boolean
+        errors: Array<string | { toString(): string } | undefined>
+      }
+    }
+    handleChange: (value: string[]) => void
+    handleBlur: () => void
+  }
   label: string
   placeholder?: string
 }
 
 export function DynamicTextList({ field, label, placeholder = 'Enter item' }: DynamicTextListProps) {
-  const items = useStore(field.store, (state) => state.value || [])
+  const items = field.state.value || []
 
   const addItem = () => {
     field.handleChange([...items, ''])
   }
 
   const removeItem = (index: number) => {
-    const newItems = items.filter((_, i) => i !== index)
+    const newItems = items.filter((_: string, i: number) => i !== index)
     field.handleChange(newItems)
   }
 
@@ -43,7 +51,7 @@ export function DynamicTextList({ field, label, placeholder = 'Enter item' }: Dy
         {items.length === 0 ? (
           <p className="text-sm text-muted-foreground">No items yet. Click "Add" to create one.</p>
         ) : (
-          items.map((item, index) => (
+          items.map((item: string, index: number) => (
             <div key={index} className="flex gap-2">
               <Input
                 value={item}
@@ -65,13 +73,15 @@ export function DynamicTextList({ field, label, placeholder = 'Enter item' }: Dy
         )}
       </div>
 
-      {useStore(field.store, (state) => state.meta.isTouched && state.meta.errors.length > 0) && (
+      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
         <div className="space-y-1">
-          {useStore(field.store, (state) => state.meta.errors).map((error) => (
-            <div key={typeof error === 'string' ? error : error.toString()} className="text-sm text-red-500 font-bold">
-              {typeof error === 'string' ? error : error.toString()}
-            </div>
-          ))}
+          {field.state.meta.errors.map((error) =>
+            error ? (
+              <div key={typeof error === 'string' ? error : error.toString()} className="text-sm text-red-500 font-bold">
+                {typeof error === 'string' ? error : error.toString()}
+              </div>
+            ) : null
+          )}
         </div>
       )}
     </div>

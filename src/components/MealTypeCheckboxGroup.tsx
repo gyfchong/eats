@@ -1,5 +1,3 @@
-import { type FieldApi } from '@tanstack/react-form'
-import { useStore } from '@tanstack/react-store'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 
@@ -8,25 +6,37 @@ const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'sides', 'snacks'
 type MealType = (typeof MEAL_TYPES)[number]
 
 interface MealTypeCheckboxGroupProps {
-  field: FieldApi<any, any, any, any, string[]>
+  field: {
+    state: {
+      value: string[]
+      meta: {
+        isTouched: boolean
+        errors: Array<string | { message: string } | undefined>
+      }
+    }
+    handleChange: (value: string[]) => void
+    handleBlur: () => void
+  }
   label?: string
 }
 
-function ErrorMessages({ errors }: { errors: Array<string | { message: string }> }) {
+function ErrorMessages({ errors }: { errors: Array<string | { message: string } | undefined> }) {
   return (
     <>
-      {errors.map((error) => (
-        <div key={typeof error === 'string' ? error : error.message} className="text-red-500 mt-1 font-bold text-sm">
-          {typeof error === 'string' ? error : error.message}
-        </div>
-      ))}
+      {errors.map((error) =>
+        error ? (
+          <div key={typeof error === 'string' ? error : error.message} className="text-red-500 mt-1 font-bold text-sm">
+            {typeof error === 'string' ? error : error.message}
+          </div>
+        ) : null
+      )}
     </>
   )
 }
 
 export function MealTypeCheckboxGroup({ field, label = 'Meal Types' }: MealTypeCheckboxGroupProps) {
-  const errors = useStore(field.store, (state) => state.meta.errors ?? []) as Array<string | { message: string }>
-  const value = useStore(field.store, (state) => state.value || [])
+  const errors = (field.state.meta.errors ?? []) as Array<string | { message: string } | undefined>
+  const value = field.state.value || []
 
   const handleToggle = (mealType: MealType, checked: boolean) => {
     if (checked) {

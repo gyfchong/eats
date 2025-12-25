@@ -1,7 +1,6 @@
 import { Heart, ExternalLink, Edit, Trash2 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Button } from '~/components/ui/button'
-import { Badge } from '~/components/ui/badge'
 import type { Doc, Id } from '~convex/_generated/dataModel'
 
 interface RecipeListItemProps {

@@ -5,7 +5,7 @@ import { api } from '~convex/_generated/api'
 import type { Doc } from '~convex/_generated/dataModel'
 
 const recipeSchema = z.object({
-  link: z.string().url('Please enter a valid URL'),
+  link: z.string().url({ message: 'Please enter a valid URL' }),
   name: z.string().optional(),
   cuisine: z.string().optional(),
   mealTypes: z.array(z.string()),
@@ -44,11 +44,11 @@ export function useRecipeForm(recipe: Doc<'recipes'> | undefined, onSuccess: () 
         recipeSchema.parse(value)
       } catch (error) {
         if (error instanceof z.ZodError) {
-          error.errors.forEach((err) => {
-            const fieldName = err.path.join('.') as any
+          error.issues.forEach((issue) => {
+            const fieldName = issue.path.join('.') as any
             formApi.setFieldMeta(fieldName, (prev) => ({
               ...prev,
-              errors: [err.message],
+              errors: [issue.message],
             }))
           })
         }
