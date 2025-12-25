@@ -8,8 +8,10 @@ This is a TanStack-based React application using modern tooling and integrations
 
 - **Frontend**: React 19 with TanStack Router (file-based routing), TanStack Query, and TanStack Form
 - **Backend**: Convex (serverless backend)
-- **Styling**: Tailwind CSS v4 with Shadcn components
+- **Deployment**: Cloudflare Pages with authentication middleware
+- **Styling**: Tailwind CSS v4 with Shadcn components (new-york style)
 - **Package Manager**: pnpm
+- **CI/CD**: GitHub Actions for automated deployment
 
 The application is in early development with demo routes showcasing forms, data fetching, and Convex integration.
 
@@ -19,11 +21,14 @@ The application is in early development with demo routes showcasing forms, data 
 # Install dependencies
 pnpm install
 
-# Start development server (runs on port 3000)
+# Start development server (runs Convex dev + Vite on port 3000 concurrently)
 pnpm dev
 
 # Build for production (includes TypeScript checking)
 pnpm build
+
+# Preview production build locally
+pnpm preview
 
 # Run tests
 pnpm test
@@ -40,11 +45,17 @@ pnpm format
 # Lint and format with auto-fix
 pnpm check
 
-# Start Convex development server (required for backend)
-npx convex dev
-
 # Initialize Convex (sets up environment variables)
 npx convex init
+
+# Deploy to Convex only
+pnpm deploy:convex
+
+# Deploy to Cloudflare Pages only
+pnpm deploy:cloudflare
+
+# Build and deploy to both Convex and Cloudflare
+pnpm deploy
 ```
 
 ## Architecture
@@ -55,7 +66,10 @@ Uses **TanStack Router v1** with file-based routing. Routes are defined as files
 
 - `src/routes/__root.tsx` - Root layout with Convex provider, Header, and devtools
 - `src/routes/index.tsx` - Home route
-- `src/routes/demo/*` - Demo routes for features
+- `src/routes/demo/tanstack-query.tsx` - TanStack Query demo
+- `src/routes/demo/form.simple.tsx` - Simple form demo
+- `src/routes/demo/form.address.tsx` - Address form demo
+- `src/routes/demo/convex.tsx` - Convex integration demo
 
 Router is configured in `src/main.tsx` with auto code splitting enabled. The root route context provides the QueryClient to all child routes.
 
@@ -110,6 +124,43 @@ Demo form integrations available:
 - `src/hooks/demo.form-context.ts` - Context-based form state
 - `src/components/demo.FormComponents.tsx` - Form component examples
 
+### Deployment
+
+The application deploys to **Cloudflare Pages** with **Convex** backend:
+
+#### Cloudflare Pages Configuration
+
+- Configuration in `wrangler.jsonc`
+- Build output directory: `dist/`
+- Project name: `eats`
+- Compatibility date: `2025-09-02`
+
+#### Authentication Middleware
+
+Basic authentication is configured via Cloudflare Workers middleware (`functions/_middleware.js`):
+
+- Protects all pages with HTTP Basic Auth
+- Credentials are hardcoded in the middleware file (update for production use)
+- Runs on every request before serving static assets
+
+#### GitHub Actions CI/CD
+
+Automated deployment pipeline (`.github/workflows/deploy.yml`):
+
+1. Triggers on push to `main` branch or manual workflow dispatch
+2. Uses Node.js 24 and pnpm 10.26.1
+3. Builds the application with Vite
+4. Deploys backend to Convex
+5. Deploys frontend to Cloudflare Pages
+
+Required GitHub secrets:
+- `CONVEX_DEPLOY_KEY` - Convex deployment key
+- `CLOUDFLARE_API_TOKEN` - Cloudflare API token
+- `CLOUDFLARE_ACCOUNT_ID` - Cloudflare account ID
+
+Required GitHub variables:
+- `VITE_CONVEX_URL` - Convex deployment URL
+
 ## Environment Setup
 
 Create a `.env.local` file with:
@@ -128,20 +179,53 @@ Run `npx convex init` to set these automatically.
 - **TypeScript**: Strict mode enabled, no unused variables/parameters
 - **Testing**: Vitest with React Testing Library
 
+## Key Dependencies
+
+### Core Framework
+- React 19.2.0 with React DOM
+- TypeScript 5.7.2
+- Vite 7.1.7
+
+### TanStack Ecosystem
+- @tanstack/react-router: 1.132.0 (file-based routing)
+- @tanstack/react-query: 5.66.5 (data fetching)
+- @tanstack/react-form: 1.0.0 (form state management)
+- @tanstack/devtools-vite: 0.3.11 (unified dev tools)
+
+### Backend & Data
+- convex: 1.27.3 (serverless backend)
+- @convex-dev/react-query: 0.0.0-alpha.11 (Convex + React Query adapter)
+- zod: 4.1.11 (schema validation)
+
+### UI & Styling
+- tailwindcss: 4.0.6
+- @tailwindcss/vite: 4.0.6
+- lucide-react: 0.544.0 (icon library)
+- Radix UI components (label, select, slider, slot, switch)
+
+### Deployment
+- wrangler: 4.54.0 (Cloudflare Pages deployment)
+- concurrently: 8.2.2 (run multiple dev commands)
+
 ## Important Conventions
 
 - Routes are generated automatically; avoid editing `src/routeTree.gen.ts`
 - Demo files (prefixed with `demo.`) can be safely deleted
 - Convex generated files in `convex/_generated/` are auto-generated; don't edit
-- Path alias `~/*` maps to `src/*`
+- Path aliases: `~/*` maps to `src/*` and `~convex/*` maps to `convex/*`
 - Use Shadcn for UI components to maintain consistency
+  - Style: `new-york`
+  - Icon library: `lucide-react`
+  - Base color: `zinc`
 - Convex schema uses the `v` validator builder for type-safe field definitions
+- Authentication middleware in `functions/_middleware.js` protects the deployed site
 
 ## File Structure Highlights
 
 ```
 src/
   routes/            # File-based routing (auto-generated tree in routeTree.gen.ts)
+    demo/           # Demo routes (forms, Convex, TanStack Query)
   components/        # React components
     ui/             # Shadcn UI components
   integrations/      # Provider integrations (Convex, TanStack Query)
@@ -154,4 +238,16 @@ convex/
   schema.ts         # Database schema definition
   todos.ts          # Example backend functions
   _generated/       # Auto-generated types and client
+
+functions/
+  _middleware.js    # Cloudflare Workers auth middleware
+
+.github/
+  workflows/
+    deploy.yml      # CI/CD deployment workflow
+
+wrangler.jsonc      # Cloudflare Pages configuration
+components.json     # Shadcn UI configuration
+vite.config.ts      # Vite configuration with plugins
+tsconfig.json       # TypeScript configuration with path aliases
 ```
