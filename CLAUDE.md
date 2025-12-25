@@ -81,6 +81,32 @@ Integrated with **TanStack Query v5** for data fetching:
 - Convex queries use `@convex-dev/react-query` adapter for integration
 - TanStack Router's loader API can be used as an alternative for route-specific data loading
 
+**Recommended Pattern for Convex Integration:**
+
+```tsx
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { api } from '~convex/_generated/api'
+
+// For queries - use useSuspenseQuery with convexQuery
+const { data: items } = useSuspenseQuery(
+  convexQuery(api.collection.list, {
+    paramName: paramValue,
+  }),
+)
+
+// For mutations - use useConvexMutation
+const createMutation = useConvexMutation(api.collection.create)
+const updateMutation = useConvexMutation(api.collection.update)
+const deleteMutation = useConvexMutation(api.collection.delete)
+```
+
+This pattern provides:
+- Type-safe Convex integration with TanStack Query
+- Automatic loading states via Suspense boundaries
+- Optimistic updates and cache management
+- No manual loading/undefined state handling needed
+
 ### Backend (Convex)
 
 - Database schema defined in `convex/schema.ts` using Convex validators (`v` builder)

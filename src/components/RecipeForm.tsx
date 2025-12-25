@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { z } from 'zod'
-import { useMutation } from 'convex/react'
+import { useConvexMutation } from '@convex-dev/react-query'
 import { api } from '~convex/_generated/api'
 import type { Doc, Id } from '~convex/_generated/dataModel'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '~/components/ui/dialog'
@@ -42,8 +42,8 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const addMutation = useMutation(api.recipes.add)
-  const updateMutation = useMutation(api.recipes.update)
+  const addMutation = useConvexMutation(api.recipes.add)
+  const updateMutation = useConvexMutation(api.recipes.update)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

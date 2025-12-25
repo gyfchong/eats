@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useParams } from '@tanstack/react-router'
-import { useQuery } from 'convex/react'
+import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '~convex/_generated/api'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
@@ -12,11 +13,9 @@ export const Route = createFileRoute('/restaurants/$restaurantId')({
 
 function RestaurantDetail() {
   const { restaurantId } = useParams({ from: Route.fullPath })
-  const restaurant = useQuery(api.restaurants.get, { id: restaurantId })
-
-  if (restaurant === undefined) {
-    return <div className="p-8">Loading...</div>
-  }
+  const { data: restaurant } = useSuspenseQuery(
+    convexQuery(api.restaurants.get, { id: restaurantId }),
+  )
 
   if (!restaurant) {
     return <div className="p-8">Restaurant not found</div>
@@ -24,7 +23,7 @@ function RestaurantDetail() {
 
   return (
     <div className="container mx-auto p-8 max-w-3xl">
-      <Link to="/restaurants/">
+      <Link to="/restaurants">
         <Button variant="ghost" size="sm" className="mb-6">
           <ArrowLeft className="size-4 mr-2" />
           Back to Restaurants

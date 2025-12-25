@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useMutation } from 'convex/react'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '~convex/_generated/api'
 import type { Id } from '~convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
@@ -18,11 +19,14 @@ function RestaurantsList() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingRestaurant, setEditingRestaurant] = useState(null)
 
-  const restaurants = useQuery(api.restaurants.list, {
-    favoritesOnly: showFavoritesOnly,
-  })
-  const toggleFavoriteMutation = useMutation(api.restaurants.toggleFavorite)
-  const removeMutation = useMutation(api.restaurants.remove)
+  const { data: restaurants } = useSuspenseQuery(
+    convexQuery(api.restaurants.list, {
+      favoritesOnly: showFavoritesOnly,
+    }),
+  )
+
+  const toggleFavoriteMutation = useConvexMutation(api.restaurants.toggleFavorite)
+  const removeMutation = useConvexMutation(api.restaurants.remove)
 
   const handleDelete = async (id: Id<'restaurants'>) => {
     if (confirm('Are you sure you want to delete this restaurant?')) {
@@ -45,9 +49,7 @@ function RestaurantsList() {
         <Label>Show favorites only</Label>
       </div>
 
-      {restaurants === undefined ? (
-        <div className="text-center py-8">Loading restaurants...</div>
-      ) : restaurants.length === 0 ? (
+      {restaurants.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           No restaurants yet. Add one to get started!
         </div>

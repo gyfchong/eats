@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useParams } from '@tanstack/react-router'
-import { useQuery } from 'convex/react'
+import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '~convex/_generated/api'
 import { Button } from '~/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -11,11 +12,9 @@ export const Route = createFileRoute('/recipes/$recipeId')({
 
 function RecipeDetail() {
   const { recipeId } = useParams({ from: Route.fullPath })
-  const recipe = useQuery(api.recipes.get, { id: recipeId as Id<'recipes'> })
-
-  if (recipe === undefined) {
-    return <div className="p-8">Loading...</div>
-  }
+  const { data: recipe } = useSuspenseQuery(
+    convexQuery(api.recipes.get, { id: recipeId as Id<'recipes'> }),
+  )
 
   if (!recipe) {
     return <div className="p-8">Recipe not found</div>
@@ -23,7 +22,7 @@ function RecipeDetail() {
 
   return (
     <div className="container mx-auto p-8 max-w-3xl">
-      <Link to="/recipes/">
+      <Link to="/recipes">
         <Button variant="ghost" size="sm" className="mb-6">
           <ArrowLeft className="size-4 mr-2" />
           Back to Recipes
