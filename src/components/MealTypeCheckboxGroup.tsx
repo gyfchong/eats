@@ -1,4 +1,5 @@
 import { type FieldApi } from '@tanstack/react-form'
+import { useStore } from '@tanstack/react-store'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 
@@ -7,8 +8,7 @@ const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'sides', 'snacks'
 type MealType = (typeof MEAL_TYPES)[number]
 
 interface MealTypeCheckboxGroupProps {
-  // @ts-ignore - FieldApi has many generic parameters, using any for simplicity
-  field: FieldApi<any>
+  field: FieldApi<any, any, any, any, string[]>
   label?: string
 }
 
@@ -25,25 +25,23 @@ function ErrorMessages({ errors }: { errors: Array<string | { message: string }>
 }
 
 export function MealTypeCheckboxGroup({ field, label = 'Meal Types' }: MealTypeCheckboxGroupProps) {
-  const errors = (field.state.meta.errors ?? []) as Array<string | { message: string }>
+  const errors = useStore(field.store, (state) => state.meta.errors ?? []) as Array<string | { message: string }>
+  const value = useStore(field.store, (state) => state.value || [])
 
   const handleToggle = (mealType: MealType, checked: boolean) => {
-    const currentValue = field.state.value || []
-
     if (checked) {
       // Add meal type if not already present
-      if (!currentValue.includes(mealType)) {
-        field.handleChange([...currentValue, mealType])
+      if (!value.includes(mealType)) {
+        field.handleChange([...value, mealType])
       }
     } else {
       // Remove meal type
-      field.handleChange(currentValue.filter((v: string) => v !== mealType))
+      field.handleChange(value.filter((v: string) => v !== mealType))
     }
   }
 
   const isChecked = (mealType: MealType) => {
-    const currentValue = field.state.value || []
-    return currentValue.includes(mealType)
+    return value.includes(mealType)
   }
 
   return (

@@ -1,8 +1,6 @@
-import { useState } from 'react'
-import { z } from 'zod'
 import { useConvexMutation } from '@convex-dev/react-query'
 import { api } from '~convex/_generated/api'
-import type { Doc, Id } from '~convex/_generated/dataModel'
+import type { Doc } from '~convex/_generated/dataModel'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -10,17 +8,7 @@ import { Label } from '~/components/ui/label'
 import { Textarea } from '~/components/ui/textarea'
 import { MealTypeCheckboxGroup } from '~/components/MealTypeCheckboxGroup'
 import { DynamicTextList } from '~/components/DynamicTextList'
-
-const recipeSchema = z.object({
-  link: z.string().url('Please enter a valid URL'),
-  name: z.string().optional(),
-  cuisine: z.string().optional(),
-  mealTypes: z.array(z.string()),
-  ingredients: z.array(z.string()),
-  notes: z.string().optional(),
-})
-
-type RecipeFormData = z.infer<typeof recipeSchema>
+import { useRecipeForm } from '~/hooks/useRecipeForm'
 
 interface RecipeFormProps {
   recipe?: Doc<'recipes'>
@@ -30,53 +18,10 @@ interface RecipeFormProps {
 }
 
 export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) {
-  const [formData, setFormData] = useState<RecipeFormData>(() => ({
-    link: recipe?.link ?? '',
-    name: recipe?.name ?? '',
-    cuisine: recipe?.cuisine ?? '',
-    mealTypes: recipe?.mealTypes ?? [],
-    ingredients: recipe?.ingredients ?? [],
-    notes: recipe?.notes ?? '',
-  }))
-
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const addMutation = useConvexMutation(api.recipes.add)
-  const updateMutation = useConvexMutation(api.recipes.update)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrors({})
-
-    try {
-      const validated = recipeSchema.parse(formData)
-      setIsSubmitting(true)
-
-      if (recipe) {
-        await updateMutation({
-          id: recipe._id,
-          ...validated,
-        })
-      } else {
-        await addMutation(validated)
-      }
-
-      onSaved?.()
-      onClose()
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {}
-        error.errors.forEach((err) => {
-          const path = err.path.join('.')
-          newErrors[path] = err.message
-        })
-        setErrors(newErrors)
-      }
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  const form = useRecipeForm(recipe, () => {
+    onSaved?.()
+    onClose()
+  })
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -85,85 +30,101 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
           <DialogTitle>{recipe ? 'Edit Recipe' : 'Add Recipe'}</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="link">Recipe Link *</Label>
-            <Input
-              id="link"
-              value={formData.link}
-              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-              placeholder="https://example.com/recipe"
-              className="mt-1"
-            />
-            {errors.link && <p className="text-red-500 text-sm mt-1">{errors.link}</p>}
-          </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            form.handleSubmit()
+          }}
+          className="space-y-4"
+        >
+          <form.Field name="link">
+            {(field) => (
+              <div>
+                <Label htmlFor="link">Recipe Link *</Label>
+                <Input
+                  id="link"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="https://example.com/recipe"
+                  className="mt-1"
+                />
+                {field.state.meta.errors.length > 0 && (
+                  <p className="text-red-500 text-sm mt-1">{field.state.meta.errors[0]}</p>
+                )}
+              </div>
+            )}
+          </form.Field>
 
-          <div>
-            <Label htmlFor="name">Recipe Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g., Chocolate Cake"
-              className="mt-1"
-            />
-          </div>
+          <form.Field name="name">
+            {(field) => (
+              <div>
+                <Label htmlFor="name">Recipe Name</Label>
+                <Input
+                  id="name"
+                  value={field.state.value ?? ''}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="e.g., Chocolate Cake"
+                  className="mt-1"
+                />
+              </div>
+            )}
+          </form.Field>
 
-          <div>
-            <Label htmlFor="cuisine">Cuisine</Label>
-            <Input
-              id="cuisine"
-              value={formData.cuisine}
-              onChange={(e) => setFormData({ ...formData, cuisine: e.target.value })}
-              placeholder="e.g., Italian"
-              className="mt-1"
-            />
-          </div>
+          <form.Field name="cuisine">
+            {(field) => (
+              <div>
+                <Label htmlFor="cuisine">Cuisine</Label>
+                <Input
+                  id="cuisine"
+                  value={field.state.value ?? ''}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="e.g., Italian"
+                  className="mt-1"
+                />
+              </div>
+            )}
+          </form.Field>
 
-          <div>
-            <MealTypeCheckboxGroup
-              field={{
-                state: { value: formData.mealTypes, meta: { isTouched: true, errors: [] } },
-                handleChange: (value) => setFormData({ ...formData, mealTypes: value }),
-                handleBlur: () => {},
-                store: { getState: () => ({ meta: { errors: [] } }) as any },
-              } as any}
-              label="Meal Types"
-            />
-          </div>
+          <form.Field name="mealTypes">
+            {(field) => <MealTypeCheckboxGroup field={field} label="Meal Types" />}
+          </form.Field>
 
-          <div>
-            <DynamicTextList
-              field={{
-                state: { value: formData.ingredients, meta: { isTouched: true, errors: [] } },
-                handleChange: (value) => setFormData({ ...formData, ingredients: value }),
-                handleBlur: () => {},
-                store: { getState: () => ({ meta: { errors: [] } }) as any },
-              } as any}
-              label="Ingredients"
-              placeholder="Enter ingredient"
-            />
-          </div>
+          <form.Field name="ingredients">
+            {(field) => <DynamicTextList field={field} label="Ingredients" placeholder="Enter ingredient" />}
+          </form.Field>
 
-          <div>
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Additional notes about the recipe"
-              className="mt-1"
-              rows={3}
-            />
-          </div>
+          <form.Field name="notes">
+            {(field) => (
+              <div>
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={field.state.value ?? ''}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="Additional notes about the recipe"
+                  className="mt-1"
+                  rows={3}
+                />
+              </div>
+            )}
+          </form.Field>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : recipe ? 'Update' : 'Add'} Recipe
-            </Button>
+            <form.Subscribe selector={(state) => state.isSubmitting}>
+              {(isSubmitting) => (
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : recipe ? 'Update' : 'Add'} Recipe
+                </Button>
+              )}
+            </form.Subscribe>
           </DialogFooter>
         </form>
       </DialogContent>

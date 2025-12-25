@@ -1,4 +1,5 @@
 import type { FieldApi } from '@tanstack/react-form'
+import { useStore } from '@tanstack/react-store'
 import { Plus, X } from 'lucide-react'
 import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
@@ -11,7 +12,7 @@ interface DynamicTextListProps {
 }
 
 export function DynamicTextList({ field, label, placeholder = 'Enter item' }: DynamicTextListProps) {
-  const items = field.state.value || []
+  const items = useStore(field.store, (state) => state.value || [])
 
   const addItem = () => {
     field.handleChange([...items, ''])
@@ -64,9 +65,9 @@ export function DynamicTextList({ field, label, placeholder = 'Enter item' }: Dy
         )}
       </div>
 
-      {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+      {useStore(field.store, (state) => state.meta.isTouched && state.meta.errors.length > 0) && (
         <div className="space-y-1">
-          {field.state.meta.errors.map((error) => (
+          {useStore(field.store, (state) => state.meta.errors).map((error) => (
             <div key={typeof error === 'string' ? error : error.toString()} className="text-sm text-red-500 font-bold">
               {typeof error === 'string' ? error : error.toString()}
             </div>
