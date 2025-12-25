@@ -2,6 +2,7 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
+  useRouterState,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
@@ -17,41 +18,46 @@ interface MyRouterContext {
   queryClient: QueryClient
 }
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
-  component: () => (
+function RootComponent() {
+  const router = useRouterState()
+  const isIndexPage = router.location.pathname === '/'
+
+  return (
     <>
       <ConvexProvider>
         <div className="min-h-screen flex flex-col">
-          <nav className="border-b bg-white">
-            <div className="container mx-auto px-8 py-4 flex items-center gap-8">
-              <Link to="/" className="font-bold text-xl">
-                Eats
-              </Link>
-              <div className="flex items-center gap-6">
-                <Link
-                  to="/recipes"
-                  className="flex items-center gap-2 hover:text-blue-600"
-                  activeProps={{
-                    className: 'text-blue-600 font-semibold',
-                  }}
-                >
-                  <ChefHat className="size-4" />
-                  Recipes
+          {!isIndexPage && (
+            <nav className="border-b bg-white">
+              <div className="container mx-auto px-8 py-4 flex items-center gap-8">
+                <Link to="/" className="font-bold text-xl">
+                  Eats
                 </Link>
-                <Link
-                  to="/restaurants"
-                  className="flex items-center gap-2 hover:text-blue-600"
-                  activeProps={{
-                    className: 'text-blue-600 font-semibold',
-                  }}
-                >
-                  <Utensils className="size-4" />
-                  Restaurants
-                </Link>
+                <div className="flex items-center gap-6">
+                  <Link
+                    to="/recipes"
+                    className="flex items-center gap-2 hover:text-blue-600"
+                    activeProps={{
+                      className: 'text-blue-600 font-semibold',
+                    }}
+                  >
+                    <ChefHat className="size-4" />
+                    Recipes
+                  </Link>
+                  <Link
+                    to="/restaurants"
+                    className="flex items-center gap-2 hover:text-blue-600"
+                    activeProps={{
+                      className: 'text-blue-600 font-semibold',
+                    }}
+                  >
+                    <Utensils className="size-4" />
+                    Restaurants
+                  </Link>
+                </div>
               </div>
-            </div>
-          </nav>
-          <main className="flex-1">
+            </nav>
+          )}
+          <main className={isIndexPage ? '' : 'flex-1'}>
             <Outlet />
           </main>
         </div>
@@ -69,5 +75,9 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         />
       </ConvexProvider>
     </>
-  ),
+  )
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
+  component: RootComponent,
 })
