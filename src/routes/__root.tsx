@@ -1,4 +1,8 @@
-import { Outlet, Link, createRootRouteWithContext } from '@tanstack/react-router'
+import {
+  Outlet,
+  Link,
+  createRootRouteWithContext,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ChefHat, Utensils } from 'lucide-react'
@@ -25,7 +29,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
               </Link>
               <div className="flex items-center gap-6">
                 <Link
-                  to="/recipes/"
+                  to="/recipes"
                   className="flex items-center gap-2 hover:text-blue-600"
                   activeProps={{
                     className: 'text-blue-600 font-semibold',
@@ -35,7 +39,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
                   Recipes
                 </Link>
                 <Link
-                  to="/restaurants/"
+                  to="/restaurants"
                   className="flex items-center gap-2 hover:text-blue-600"
                   activeProps={{
                     className: 'text-blue-600 font-semibold',

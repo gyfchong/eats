@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useMutation } from 'convex/react'
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { api } from '~convex/_generated/api'
 import type { Id } from '~convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
@@ -8,6 +8,7 @@ import { Switch } from '~/components/ui/switch'
 import { Label } from '~/components/ui/label'
 import { RecipeForm } from '~/components/RecipeForm'
 import { RecipeListItem } from '~/components/RecipeListItem'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/recipes/')({
   component: RecipesList,
@@ -18,9 +19,14 @@ function RecipesList() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingRecipe, setEditingRecipe] = useState(null)
 
-  const recipes = useQuery(api.recipes.list, { favoritesOnly: showFavoritesOnly })
-  const toggleFavoriteMutation = useMutation(api.recipes.toggleFavorite)
-  const removeMutation = useMutation(api.recipes.remove)
+  const { data: recipes } = useSuspenseQuery(
+    convexQuery(api.recipes.list, {
+      favoritesOnly: showFavoritesOnly,
+    }),
+  )
+
+  const toggleFavoriteMutation = useConvexMutation(api.recipes.toggleFavorite)
+  const removeMutation = useConvexMutation(api.recipes.remove)
 
   const handleDelete = async (id: Id<'recipes'>) => {
     if (confirm('Are you sure you want to delete this recipe?')) {
@@ -36,21 +42,26 @@ function RecipesList() {
       </div>
 
       <div className="flex items-center gap-3 mb-6">
-        <Switch checked={showFavoritesOnly} onCheckedChange={setShowFavoritesOnly} />
+        <Switch
+          checked={showFavoritesOnly}
+          onCheckedChange={setShowFavoritesOnly}
+        />
         <Label>Show favorites only</Label>
       </div>
 
-      {recipes === undefined ? (
-        <div className="text-center py-8">Loading recipes...</div>
-      ) : recipes.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">No recipes yet. Add one to get started!</div>
+      {recipes.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No recipes yet. Add one to get started!
+        </div>
       ) : (
         <div className="space-y-4">
           {recipes.map((recipe) => (
             <RecipeListItem
               key={recipe._id}
               recipe={recipe}
-              onToggleFavorite={async (id) => await toggleFavoriteMutation({ id })}
+              onToggleFavorite={async (id) =>
+                await toggleFavoriteMutation({ id })
+              }
               onEdit={(recipe) => setEditingRecipe(recipe)}
               onDelete={handleDelete}
             />

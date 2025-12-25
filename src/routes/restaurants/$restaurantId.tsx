@@ -32,10 +32,16 @@ function RestaurantDetail() {
       </Link>
 
       <div className="bg-white border rounded-lg p-8">
-        <h1 className="text-3xl font-bold mb-2">{restaurant.name || restaurant.link}</h1>
-        <p className="text-xl text-gray-700 font-semibold mb-4">{restaurant.suburb}</p>
+        <h1 className="text-3xl font-bold mb-2">
+          {restaurant.name || restaurant.link}
+        </h1>
+        <p className="text-xl text-gray-700 font-semibold mb-4">
+          {restaurant.suburb}
+        </p>
 
-        {restaurant.cuisine && <p className="text-lg text-gray-600 mb-4">{restaurant.cuisine}</p>}
+        {restaurant.cuisine && (
+          <p className="text-lg text-gray-600 mb-4">{restaurant.cuisine}</p>
+        )}
 
         {restaurant.mealTypes.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
@@ -52,7 +58,10 @@ function RestaurantDetail() {
             <h2 className="text-2xl font-semibold mb-4">Dishes</h2>
             <div className="space-y-3">
               {restaurant.dishes.map((dish, idx) => (
-                <div key={idx} className="flex items-center justify-between border-b pb-3 last:border-0">
+                <div
+                  key={idx}
+                  className="flex items-center justify-between border-b pb-3 last:border-0"
+                >
                   <span className="font-medium">{dish.name}</span>
                   {dish.rating && <StarRating value={dish.rating} size="sm" />}
                 </div>
@@ -61,7 +70,12 @@ function RestaurantDetail() {
           </div>
         )}
 
-        <a href={restaurant.link} target="_blank" rel="noopener noreferrer" className="mt-8 inline-block">
+        <a
+          href={restaurant.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-8 inline-block"
+        >
           <Button>Visit Restaurant</Button>
         </a>
       </div>

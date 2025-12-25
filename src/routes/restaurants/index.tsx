@@ -18,7 +18,9 @@ function RestaurantsList() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingRestaurant, setEditingRestaurant] = useState(null)
 
-  const restaurants = useQuery(api.restaurants.list, { favoritesOnly: showFavoritesOnly })
+  const restaurants = useQuery(api.restaurants.list, {
+    favoritesOnly: showFavoritesOnly,
+  })
   const toggleFavoriteMutation = useMutation(api.restaurants.toggleFavorite)
   const removeMutation = useMutation(api.restaurants.remove)
 
@@ -36,21 +38,28 @@ function RestaurantsList() {
       </div>
 
       <div className="flex items-center gap-3 mb-6">
-        <Switch checked={showFavoritesOnly} onCheckedChange={setShowFavoritesOnly} />
+        <Switch
+          checked={showFavoritesOnly}
+          onCheckedChange={setShowFavoritesOnly}
+        />
         <Label>Show favorites only</Label>
       </div>
 
       {restaurants === undefined ? (
         <div className="text-center py-8">Loading restaurants...</div>
       ) : restaurants.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">No restaurants yet. Add one to get started!</div>
+        <div className="text-center py-8 text-gray-500">
+          No restaurants yet. Add one to get started!
+        </div>
       ) : (
         <div className="space-y-4">
           {restaurants.map((restaurant) => (
             <RestaurantListItem
               key={restaurant._id}
               restaurant={restaurant}
-              onToggleFavorite={async (id) => await toggleFavoriteMutation({ id })}
+              onToggleFavorite={async (id) =>
+                await toggleFavoriteMutation({ id })
+              }
               onEdit={(restaurant) => setEditingRestaurant(restaurant)}
               onDelete={handleDelete}
             />
