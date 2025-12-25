@@ -87,10 +87,12 @@ Integrated with **TanStack Query v5** for data fetching:
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '~convex/_generated/api'
+import { convexQueryClient } from '~/integrations/convex/provider'
 
 // For queries - use useSuspenseQuery with convexQuery
+// IMPORTANT: Always pass convexQueryClient as the first parameter
 const { data: items } = useSuspenseQuery(
-  convexQuery(api.collection.list, {
+  convexQuery(convexQueryClient, api.collection.list, {
     paramName: paramValue,
   }),
 )

@@ -7,6 +7,7 @@ import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
 import { StarRating } from '~/components/StarRating'
 import { ArrowLeft } from 'lucide-react'
+import { convexQueryClient } from '~/integrations/convex/provider'
 
 export const Route = createFileRoute('/restaurants/$restaurantId')({
   component: RestaurantDetail,
@@ -15,7 +16,7 @@ export const Route = createFileRoute('/restaurants/$restaurantId')({
 function RestaurantDetail() {
   const { restaurantId } = useParams({ from: Route.fullPath })
   const { data: restaurant } = useSuspenseQuery(
-    convexQuery(api.restaurants.get, { id: restaurantId as Id<'restaurants'> }),
+    convexQuery(convexQueryClient, api.restaurants.get, { id: restaurantId as Id<'restaurants'> }),
   )
 
   if (!restaurant) {

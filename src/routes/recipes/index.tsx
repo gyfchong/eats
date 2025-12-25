@@ -9,6 +9,7 @@ import { Label } from '~/components/ui/label'
 import { RecipeForm } from '~/components/RecipeForm'
 import { RecipeListItem } from '~/components/RecipeListItem'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { convexQueryClient } from '~/integrations/convex/provider'
 
 export const Route = createFileRoute('/recipes/')({
   component: RecipesList,
@@ -20,7 +21,7 @@ function RecipesList() {
   const [editingRecipe, setEditingRecipe] = useState<Doc<'recipes'> | undefined>(undefined)
 
   const { data: recipes } = useSuspenseQuery(
-    convexQuery(api.recipes.list, {
+    convexQuery(convexQueryClient, api.recipes.list, {
       favoritesOnly: showFavoritesOnly,
     }),
   )
