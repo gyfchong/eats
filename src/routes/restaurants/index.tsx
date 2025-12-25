@@ -9,7 +9,6 @@ import { Switch } from '~/components/ui/switch'
 import { Label } from '~/components/ui/label'
 import { RestaurantForm } from '~/components/RestaurantForm'
 import { RestaurantListItem } from '~/components/RestaurantListItem'
-import { convexQueryClient } from '~/integrations/convex/provider'
 
 export const Route = createFileRoute('/restaurants/')({
   component: RestaurantsList,
@@ -21,7 +20,7 @@ function RestaurantsList() {
   const [editingRestaurant, setEditingRestaurant] = useState<Doc<'restaurants'> | undefined>(undefined)
 
   const { data: restaurants } = useSuspenseQuery(
-    convexQuery(convexQueryClient, api.restaurants.list, {
+    convexQuery(api.restaurants.list, {
       favoritesOnly: showFavoritesOnly,
     }),
   )
@@ -56,7 +55,7 @@ function RestaurantsList() {
         </div>
       ) : (
         <div className="space-y-4">
-          {restaurants.map((restaurant) => (
+          {restaurants.map((restaurant: Doc<'restaurants'>) => (
             <RestaurantListItem
               key={restaurant._id}
               restaurant={restaurant}

@@ -7,7 +7,6 @@ import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
 import { StarRating } from '~/components/StarRating'
 import { ArrowLeft } from 'lucide-react'
-import { convexQueryClient } from '~/integrations/convex/provider'
 
 export const Route = createFileRoute('/restaurants/$restaurantId')({
   component: RestaurantDetail,
@@ -16,7 +15,7 @@ export const Route = createFileRoute('/restaurants/$restaurantId')({
 function RestaurantDetail() {
   const { restaurantId } = useParams({ from: Route.fullPath })
   const { data: restaurant } = useSuspenseQuery(
-    convexQuery(convexQueryClient, api.restaurants.get, { id: restaurantId as Id<'restaurants'> }),
+    convexQuery(api.restaurants.get, { id: restaurantId as Id<'restaurants'> }),
   )
 
   if (!restaurant) {
@@ -46,7 +45,7 @@ function RestaurantDetail() {
 
         {restaurant.mealTypes.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
-            {restaurant.mealTypes.map((type) => (
+            {restaurant.mealTypes.map((type: string) => (
               <Badge key={type} variant="secondary" className="capitalize">
                 {type}
               </Badge>
@@ -58,7 +57,7 @@ function RestaurantDetail() {
           <div className="mb-6">
             <h2 className="text-2xl font-semibold mb-4">Dishes</h2>
             <div className="space-y-3">
-              {restaurant.dishes.map((dish, idx) => (
+              {restaurant.dishes.map((dish: { name: string; rating?: number }, idx: number) => (
                 <div
                   key={idx}
                   className="flex items-center justify-between border-b pb-3 last:border-0"

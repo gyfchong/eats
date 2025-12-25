@@ -5,7 +5,6 @@ import { api } from '~convex/_generated/api'
 import { Button } from '~/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import type { Id } from '~convex/_generated/dataModel'
-import { convexQueryClient } from '~/integrations/convex/provider'
 
 export const Route = createFileRoute('/recipes/$recipeId')({
   component: RecipeDetail,
@@ -14,7 +13,7 @@ export const Route = createFileRoute('/recipes/$recipeId')({
 function RecipeDetail() {
   const { recipeId } = useParams({ from: Route.fullPath })
   const { data: recipe } = useSuspenseQuery(
-    convexQuery(convexQueryClient, api.recipes.get, { id: recipeId as Id<'recipes'> }),
+    convexQuery(api.recipes.get, { id: recipeId as Id<'recipes'> }),
   )
 
   if (!recipe) {
@@ -43,7 +42,7 @@ function RecipeDetail() {
           <div className="mb-6">
             <h2 className="text-2xl font-semibold mb-3">Ingredients</h2>
             <ul className="space-y-2">
-              {recipe.ingredients.map((ingredient, idx) => (
+              {recipe.ingredients.map((ingredient: string, idx: number) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-xl leading-none">•</span>
                   <span>{ingredient}</span>

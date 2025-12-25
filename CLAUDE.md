@@ -66,10 +66,6 @@ Uses **TanStack Router v1** with file-based routing. Routes are defined as files
 
 - `src/routes/__root.tsx` - Root layout with Convex provider, Header, and devtools
 - `src/routes/index.tsx` - Home route
-- `src/routes/demo/tanstack-query.tsx` - TanStack Query demo
-- `src/routes/demo/form.simple.tsx` - Simple form demo
-- `src/routes/demo/form.address.tsx` - Address form demo
-- `src/routes/demo/convex.tsx` - Convex integration demo
 
 Router is configured in `src/main.tsx` with auto code splitting enabled. The root route context provides the QueryClient to all child routes.
 
@@ -87,12 +83,11 @@ Integrated with **TanStack Query v5** for data fetching:
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '~convex/_generated/api'
-import { convexQueryClient } from '~/integrations/convex/provider'
 
 // For queries - use useSuspenseQuery with convexQuery
-// IMPORTANT: Always pass convexQueryClient as the first parameter
+// The convexQueryClient is configured globally as the default queryFn
 const { data: items } = useSuspenseQuery(
-  convexQuery(convexQueryClient, api.collection.list, {
+  convexQuery(api.collection.list, {
     paramName: paramValue,
   }),
 )
@@ -104,10 +99,20 @@ const deleteMutation = useConvexMutation(api.collection.delete)
 ```
 
 This pattern provides:
+
 - Type-safe Convex integration with TanStack Query
 - Automatic loading states via Suspense boundaries
+- Reactive data updates pushed from server (no manual refetching needed)
 - Optimistic updates and cache management
 - No manual loading/undefined state handling needed
+
+**How It Works:**
+The QueryClient is configured (in `src/integrations/tanstack-query/root-provider.tsx`) with:
+- `queryFn: convexQueryClient.queryFn()` - handles executing Convex queries
+- `queryKeyHashFn: convexQueryClient.hashFn()` - handles query key hashing
+- `staleTime: Infinity` - data is never stale because Convex pushes updates reactively
+
+The `convexQueryClient.connect(queryClient)` call enables reactive subscriptions where query results automatically update when the server data changes
 
 ### Backend (Convex)
 
@@ -146,11 +151,150 @@ All running in the root layout (`src/routes/__root.tsx`):
 
 ### Forms
 
-Demo form integrations available:
+---
 
-- `src/hooks/demo.form.ts` - Basic TanStack Form usage
-- `src/hooks/demo.form-context.ts` - Context-based form state
-- `src/components/demo.FormComponents.tsx` - Form component examples
+id: overview
+title: Overview
+
+---
+
+TanStack Form is the ultimate solution for handling forms in web applications, providing a powerful and flexible approach to form management. Designed with first-class TypeScript support, headless UI components, and a framework-agnostic design, it streamlines form handling and ensures a seamless experience across various front-end frameworks.
+
+## Motivation
+
+Most web frameworks do not offer a comprehensive solution for form handling, leaving developers to create their own custom implementations or rely on less-capable libraries. This often results in a lack of consistency, poor performance, and increased development time. TanStack Form aims to address these challenges by providing an all-in-one solution for managing forms that is both powerful and easy to use.
+
+With TanStack Form, developers can tackle common form-related challenges such as:
+
+- Reactive data binding and state management
+- Complex validation and error handling
+- Accessibility and responsive design
+- Internationalization and localization
+- Cross-platform compatibility and custom styling
+
+By providing a complete solution for these challenges, TanStack Form empowers developers to build robust and user-friendly forms with ease.
+
+## Enough talk, show me some code already!
+
+In the example below, you can see TanStack Form in action with the React framework adapter:
+
+[Open in CodeSandbox](https://codesandbox.io/s/github/tanstack/form/tree/main/examples/react/simple)
+
+```tsx
+import * as React from 'react'
+import { createRoot } from 'react-dom/client'
+import { useForm } from '@tanstack/react-form'
+import type { AnyFieldApi } from '@tanstack/react-form'
+
+function FieldInfo({ field }: { field: AnyFieldApi }) {
+  return (
+    <>
+      {field.state.meta.isTouched && !field.state.meta.isValid ? (
+        <em>{field.state.meta.errors.join(', ')}</em>
+      ) : null}
+      {field.state.meta.isValidating ? 'Validating...' : null}
+    </>
+  )
+}
+
+export default function App() {
+  const form = useForm({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+    },
+    onSubmit: async ({ value }) => {
+      // Do something with form data
+      console.log(value)
+    },
+  })
+
+  return (
+    <div>
+      <h1>Simple Form Example</h1>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          form.handleSubmit()
+        }}
+      >
+        <div>
+          {/* A type-safe field component*/}
+          <form.Field
+            name="firstName"
+            validators={{
+              onChange: ({ value }) =>
+                !value
+                  ? 'A first name is required'
+                  : value.length < 3
+                    ? 'First name must be at least 3 characters'
+                    : undefined,
+              onChangeAsyncDebounceMs: 500,
+              onChangeAsync: async ({ value }) => {
+                await new Promise((resolve) => setTimeout(resolve, 1000))
+                return (
+                  value.includes('error') && 'No "error" allowed in first name'
+                )
+              },
+            }}
+            children={(field) => {
+              // Avoid hasty abstractions. Render props are great!
+              return (
+                <>
+                  <label htmlFor={field.name}>First Name:</label>
+                  <input
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                  <FieldInfo field={field} />
+                </>
+              )
+            }}
+          />
+        </div>
+        <div>
+          <form.Field
+            name="lastName"
+            children={(field) => (
+              <>
+                <label htmlFor={field.name}>Last Name:</label>
+                <input
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+                <FieldInfo field={field} />
+              </>
+            )}
+          />
+        </div>
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}
+          children={([canSubmit, isSubmitting]) => (
+            <button type="submit" disabled={!canSubmit}>
+              {isSubmitting ? '...' : 'Submit'}
+            </button>
+          )}
+        />
+      </form>
+    </div>
+  )
+}
+
+const rootElement = document.getElementById('root')!
+
+createRoot(rootElement).render(<App />)
+```
+
+## You talked me into it, so what now?
+
+- Learn TanStack Form at your own pace with our thorough [Walkthrough Guide](./installation) and [API Reference](./reference/classes/FormApi)
 
 ### Deployment
 
@@ -182,11 +326,13 @@ Automated deployment pipeline (`.github/workflows/deploy.yml`):
 5. Deploys frontend to Cloudflare Pages
 
 Required GitHub secrets:
+
 - `CONVEX_DEPLOY_KEY` - Convex deployment key
 - `CLOUDFLARE_API_TOKEN` - Cloudflare API token
 - `CLOUDFLARE_ACCOUNT_ID` - Cloudflare account ID
 
 Required GitHub variables:
+
 - `VITE_CONVEX_URL` - Convex deployment URL
 
 ## Environment Setup
@@ -210,28 +356,33 @@ Run `npx convex init` to set these automatically.
 ## Key Dependencies
 
 ### Core Framework
+
 - React 19.2.0 with React DOM
 - TypeScript 5.7.2
 - Vite 7.1.7
 
 ### TanStack Ecosystem
+
 - @tanstack/react-router: 1.132.0 (file-based routing)
 - @tanstack/react-query: 5.66.5 (data fetching)
 - @tanstack/react-form: 1.0.0 (form state management)
 - @tanstack/devtools-vite: 0.3.11 (unified dev tools)
 
 ### Backend & Data
+
 - convex: 1.27.3 (serverless backend)
 - @convex-dev/react-query: 0.0.0-alpha.11 (Convex + React Query adapter)
 - zod: 4.1.11 (schema validation)
 
 ### UI & Styling
+
 - tailwindcss: 4.0.6
 - @tailwindcss/vite: 4.0.6
 - lucide-react: 0.544.0 (icon library)
 - Radix UI components (label, select, slider, slot, switch)
 
 ### Deployment
+
 - wrangler: 4.54.0 (Cloudflare Pages deployment)
 - concurrently: 8.2.2 (run multiple dev commands)
 
