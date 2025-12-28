@@ -23,9 +23,9 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{recipe ? 'Edit Recipe' : 'Add Recipe'}</DialogTitle>
+          <DialogTitle className="font-display text-xl sm:text-2xl">{recipe ? 'Edit Recipe' : 'Add Recipe'}</DialogTitle>
         </DialogHeader>
 
         <form
@@ -34,7 +34,7 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
             e.stopPropagation()
             form.handleSubmit()
           }}
-          className="space-y-4"
+          className="space-y-4 sm:space-y-5"
         >
           <form.Field name="link">
             {(field) => (

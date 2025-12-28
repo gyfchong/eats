@@ -19,34 +19,34 @@ function RestaurantDetail() {
   )
 
   if (!restaurant) {
-    return <div className="p-8">Restaurant not found</div>
+    return <div className="p-6 sm:p-8 text-muted-foreground">Restaurant not found</div>
   }
 
   return (
-    <div className="container mx-auto p-8 max-w-3xl">
+    <div className="container mx-auto px-4 sm:px-8 py-6 sm:py-8 max-w-3xl animate-fade-up">
       <Link to="/restaurants">
-        <Button variant="ghost" size="sm" className="mb-6">
-          <ArrowLeft className="size-4 mr-2" />
-          Back to Restaurants
+        <Button variant="ghost" size="sm" className="mb-4 sm:mb-6 -ml-2">
+          <ArrowLeft className="size-4 mr-1.5" />
+          Back
         </Button>
       </Link>
 
-      <div className="bg-white border rounded-lg p-8">
-        <h1 className="text-3xl font-bold mb-2">
+      <div className="bg-card border border-border/50 rounded-2xl p-5 sm:p-8">
+        <h1 className="text-2xl sm:text-3xl font-display mb-1">
           {restaurant.name || restaurant.link}
         </h1>
-        <p className="text-xl text-gray-700 font-semibold mb-4">
+        <p className="text-base sm:text-lg text-muted-foreground font-medium mb-4">
           {restaurant.suburb}
         </p>
 
         {restaurant.cuisine && (
-          <p className="text-lg text-gray-600 mb-4">{restaurant.cuisine}</p>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">{restaurant.cuisine}</p>
         )}
 
         {restaurant.mealTypes.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-6">
             {restaurant.mealTypes.map((type: string) => (
-              <Badge key={type} variant="secondary" className="capitalize">
+              <Badge key={type} variant="secondary" className="capitalize text-xs px-2 py-0.5">
                 {type}
               </Badge>
             ))}
@@ -54,15 +54,15 @@ function RestaurantDetail() {
         )}
 
         {restaurant.dishes.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold mb-4">Dishes</h2>
-            <div className="space-y-3">
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-display mb-4">Dishes</h2>
+            <div className="space-y-0 divide-y divide-border/50">
               {restaurant.dishes.map((dish: { name: string; rating?: number }, idx: number) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between border-b pb-3 last:border-0"
+                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
                 >
-                  <span className="font-medium">{dish.name}</span>
+                  <span className="font-medium text-sm sm:text-base">{dish.name}</span>
                   {dish.rating && <StarRating value={dish.rating} size="sm" />}
                 </div>
               ))}
@@ -74,9 +74,9 @@ function RestaurantDetail() {
           href={restaurant.link}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-8 inline-block"
+          className="block sm:inline-block"
         >
-          <Button>Visit Restaurant</Button>
+          <Button className="w-full sm:w-auto">Visit Restaurant</Button>
         </a>
       </div>
     </div>

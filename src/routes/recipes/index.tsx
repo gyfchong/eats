@@ -35,36 +35,40 @@ function RecipesList() {
   }
 
   return (
-    <div className="container mx-auto p-8 max-w-4xl">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Recipes</h1>
-        <Button onClick={() => setIsAddModalOpen(true)}>Add Recipe</Button>
+    <div className="container mx-auto px-4 sm:px-8 py-6 sm:py-8 max-w-4xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-display">Recipes</h1>
+        <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto">
+          Add Recipe
+        </Button>
       </div>
 
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-6 p-3 sm:p-0 bg-card sm:bg-transparent rounded-xl sm:rounded-none border sm:border-0 border-border/50">
         <Switch
           checked={showFavoritesOnly}
           onCheckedChange={setShowFavoritesOnly}
         />
-        <Label>Show favorites only</Label>
+        <Label className="text-sm sm:text-base">Show favorites only</Label>
       </div>
 
       {recipes.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No recipes yet. Add one to get started!
+        <div className="text-center py-12 sm:py-16 text-muted-foreground">
+          <p className="text-lg">No recipes yet</p>
+          <p className="text-sm mt-1">Add one to get started!</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {recipes.map((recipe: Doc<'recipes'>) => (
-            <RecipeListItem
-              key={recipe._id}
-              recipe={recipe}
-              onToggleFavorite={async (id) =>
-                await toggleFavoriteMutation({ id })
-              }
-              onEdit={(recipe) => setEditingRecipe(recipe)}
-              onDelete={handleDelete}
-            />
+        <div className="space-y-3 sm:space-y-4">
+          {recipes.map((recipe: Doc<'recipes'>, index: number) => (
+            <div key={recipe._id} className="animate-fade-up" style={{ animationDelay: `${index * 0.05}s` }}>
+              <RecipeListItem
+                recipe={recipe}
+                onToggleFavorite={async (id) =>
+                  await toggleFavoriteMutation({ id })
+                }
+                onEdit={(recipe) => setEditingRecipe(recipe)}
+                onDelete={handleDelete}
+              />
+            </div>
           ))}
         </div>
       )}

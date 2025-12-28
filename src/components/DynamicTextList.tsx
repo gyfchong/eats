@@ -40,7 +40,7 @@ export function DynamicTextList({ field, label, placeholder = 'Enter item' }: Dy
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-xl font-bold">{label}</Label>
+        <Label className="text-base sm:text-lg font-semibold">{label}</Label>
         <Button type="button" size="sm" variant="outline" onClick={addItem}>
           <Plus className="size-4 mr-1" />
           Add
@@ -49,7 +49,7 @@ export function DynamicTextList({ field, label, placeholder = 'Enter item' }: Dy
 
       <div className="space-y-2">
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No items yet. Click "Add" to create one.</p>
+          <p className="text-sm text-muted-foreground py-2">No items yet. Click "Add" to create one.</p>
         ) : (
           items.map((item: string, index: number) => (
             <div key={index} className="flex gap-2">
@@ -58,12 +58,13 @@ export function DynamicTextList({ field, label, placeholder = 'Enter item' }: Dy
                 placeholder={placeholder}
                 onChange={(e) => updateItem(index, e.target.value)}
                 onBlur={field.handleBlur}
-                className="flex-1"
+                className="flex-1 text-sm sm:text-base"
               />
               <Button
                 type="button"
                 size="icon"
-                variant="destructive"
+                variant="ghost"
+                className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={() => removeItem(index)}
               >
                 <X className="size-4" />

@@ -22,9 +22,9 @@ export function RestaurantForm({ restaurant, open, onClose, onSaved }: Restauran
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{restaurant ? 'Edit Restaurant' : 'Add Restaurant'}</DialogTitle>
+          <DialogTitle className="font-display text-xl sm:text-2xl">{restaurant ? 'Edit Restaurant' : 'Add Restaurant'}</DialogTitle>
         </DialogHeader>
 
         <form
@@ -33,7 +33,7 @@ export function RestaurantForm({ restaurant, open, onClose, onSaved }: Restauran
             e.stopPropagation()
             form.handleSubmit()
           }}
-          className="space-y-4"
+          className="space-y-4 sm:space-y-5"
         >
           <form.Field name="link">
             {(field) => (

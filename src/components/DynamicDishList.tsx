@@ -49,7 +49,7 @@ export function DynamicDishList({ field, label = 'Dishes' }: DynamicDishListProp
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <Label className="text-xl font-bold">{label}</Label>
+        <Label className="text-base sm:text-lg font-semibold">{label}</Label>
         <Button type="button" size="sm" variant="outline" onClick={addItem}>
           <Plus className="size-4 mr-1" />
           Add
@@ -58,30 +58,31 @@ export function DynamicDishList({ field, label = 'Dishes' }: DynamicDishListProp
 
       <div className="space-y-3">
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No dishes yet. Click "Add" to create one.</p>
+          <p className="text-sm text-muted-foreground py-2">No dishes yet. Click "Add" to create one.</p>
         ) : (
           items.map((item: Dish, index: number) => (
-            <div key={index} className="flex gap-2 items-end">
+            <div key={index} className="p-3 bg-muted/30 rounded-lg space-y-2 sm:space-y-0 sm:flex sm:gap-2 sm:items-center sm:p-0 sm:bg-transparent sm:rounded-none">
               <div className="flex-1">
                 <Input
                   value={item.name}
                   placeholder="Dish name"
                   onChange={(e) => updateName(index, e.target.value)}
                   onBlur={field.handleBlur}
-                  className="w-full"
+                  className="w-full text-sm sm:text-base"
                 />
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center justify-between sm:justify-end gap-2">
                 <StarRating value={item.rating || 0} onChange={(rating) => updateRating(index, rating)} interactive size="sm" />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => removeItem(index)}
+                >
+                  <X className="size-4" />
+                </Button>
               </div>
-              <Button
-                type="button"
-                size="icon"
-                variant="destructive"
-                onClick={() => removeItem(index)}
-              >
-                <X className="size-4" />
-              </Button>
             </div>
           ))
         )}
