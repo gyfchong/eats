@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
 import { api } from '~convex/_generated/api'
@@ -8,31 +8,17 @@ import { Switch } from '~/components/ui/switch'
 import { Label } from '~/components/ui/label'
 import { RecipeForm } from '~/components/RecipeForm'
 import { RecipeListItem } from '~/components/RecipeListItem'
+import { RecipeListSkeleton } from '~/components/RecipeListItemSkeleton'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/recipes/')({
-  component: RecipesList,
+  component: RecipesPage,
 })
 
-function RecipesList() {
+function RecipesPage() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingRecipe, setEditingRecipe] = useState<Doc<'recipes'> | undefined>(undefined)
-
-  const { data: recipes } = useSuspenseQuery(
-    convexQuery(api.recipes.list, {
-      favoritesOnly: showFavoritesOnly,
-    }),
-  )
-
-  const toggleFavoriteMutation = useConvexMutation(api.recipes.toggleFavorite)
-  const removeMutation = useConvexMutation(api.recipes.remove)
-
-  const handleDelete = async (id: Id<'recipes'>) => {
-    if (confirm('Are you sure you want to delete this recipe?')) {
-      await removeMutation({ id })
-    }
-  }
 
   return (
     <div className="container mx-auto px-4 sm:px-8 py-6 sm:py-8 max-w-4xl">
@@ -51,27 +37,12 @@ function RecipesList() {
         <Label className="text-sm sm:text-base">Show favorites only</Label>
       </div>
 
-      {recipes.length === 0 ? (
-        <div className="text-center py-12 sm:py-16 text-muted-foreground">
-          <p className="text-lg">No recipes yet</p>
-          <p className="text-sm mt-1">Add one to get started!</p>
-        </div>
-      ) : (
-        <div className="space-y-3 sm:space-y-4">
-          {recipes.map((recipe: Doc<'recipes'>, index: number) => (
-            <div key={recipe._id} className="animate-fade-up" style={{ animationDelay: `${index * 0.05}s` }}>
-              <RecipeListItem
-                recipe={recipe}
-                onToggleFavorite={async (id) =>
-                  await toggleFavoriteMutation({ id })
-                }
-                onEdit={(recipe) => setEditingRecipe(recipe)}
-                onDelete={handleDelete}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+      <Suspense fallback={<RecipeListSkeleton count={4} />}>
+        <RecipesList
+          showFavoritesOnly={showFavoritesOnly}
+          onEdit={setEditingRecipe}
+        />
+      </Suspense>
 
       <RecipeForm
         recipe={editingRecipe}
@@ -85,6 +56,54 @@ function RecipesList() {
           setEditingRecipe(undefined)
         }}
       />
+    </div>
+  )
+}
+
+interface RecipesListProps {
+  showFavoritesOnly: boolean
+  onEdit: (recipe: Doc<'recipes'>) => void
+}
+
+function RecipesList({ showFavoritesOnly, onEdit }: RecipesListProps) {
+  const { data: recipes } = useSuspenseQuery(
+    convexQuery(api.recipes.list, {
+      favoritesOnly: showFavoritesOnly,
+    }),
+  )
+
+  const toggleFavoriteMutation = useConvexMutation(api.recipes.toggleFavorite)
+  const removeMutation = useConvexMutation(api.recipes.remove)
+
+  const handleDelete = async (id: Id<'recipes'>) => {
+    if (confirm('Are you sure you want to delete this recipe?')) {
+      await removeMutation({ id })
+    }
+  }
+
+  if (recipes.length === 0) {
+    return (
+      <div className="text-center py-12 sm:py-16 text-muted-foreground">
+        <p className="text-lg">No recipes yet</p>
+        <p className="text-sm mt-1">Add one to get started!</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      {recipes.map((recipe: Doc<'recipes'>, index: number) => (
+        <div key={recipe._id} className="animate-fade-up" style={{ animationDelay: `${index * 0.05}s` }}>
+          <RecipeListItem
+            recipe={recipe}
+            onToggleFavorite={async (id) =>
+              await toggleFavoriteMutation({ id })
+            }
+            onEdit={onEdit}
+            onDelete={handleDelete}
+          />
+        </div>
+      ))}
     </div>
   )
 }

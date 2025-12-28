@@ -39,6 +39,60 @@ code {
   animation: fade-up 0.4s ease-out forwards;
 }
 
+/* Skeleton shimmer effect - RAF-driven with GPU acceleration */
+.skeleton-shimmer {
+  --shimmer-x: -100%;
+  contain: layout style paint;
+  will-change: contents;
+}
+
+.skeleton-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(1 0 0 / 0.4) 50%,
+    transparent 100%
+  );
+  transform: translate3d(var(--shimmer-x), 0, 0);
+  will-change: transform;
+  /* Use compositor-only properties for 60fps+ */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Fallback keyframe animation for reduced motion or SSR */
+@keyframes shimmer {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+/* Skeleton pulse for reduced motion preference */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Reduced motion: use subtle pulse instead of shimmer */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::before {
+    display: none;
+  }
+  .skeleton-shimmer {
+    animation: skeleton-pulse 2s ease-in-out infinite;
+  }
+}
+
 /* Stagger animation delays */
 .stagger-1 { animation-delay: 0.05s; }
 .stagger-2 { animation-delay: 0.1s; }

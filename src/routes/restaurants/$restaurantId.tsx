@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createFileRoute, Link, useParams } from '@tanstack/react-router'
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
@@ -6,11 +7,20 @@ import type { Id } from '~convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
 import { StarRating } from '~/components/StarRating'
+import { RestaurantDetailSkeleton } from '~/components/RestaurantDetailSkeleton'
 import { ArrowLeft } from 'lucide-react'
 
 export const Route = createFileRoute('/restaurants/$restaurantId')({
-  component: RestaurantDetail,
+  component: RestaurantDetailPage,
 })
+
+function RestaurantDetailPage() {
+  return (
+    <Suspense fallback={<RestaurantDetailSkeleton />}>
+      <RestaurantDetail />
+    </Suspense>
+  )
+}
 
 function RestaurantDetail() {
   const { restaurantId } = useParams({ from: Route.fullPath })

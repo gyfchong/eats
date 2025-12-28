@@ -1,14 +1,24 @@
+import { Suspense } from 'react'
 import { createFileRoute, Link, useParams } from '@tanstack/react-router'
 import { convexQuery } from '@convex-dev/react-query'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { api } from '~convex/_generated/api'
 import { Button } from '~/components/ui/button'
+import { RecipeDetailSkeleton } from '~/components/RecipeDetailSkeleton'
 import { ArrowLeft } from 'lucide-react'
 import type { Id } from '~convex/_generated/dataModel'
 
 export const Route = createFileRoute('/recipes/$recipeId')({
-  component: RecipeDetail,
+  component: RecipeDetailPage,
 })
+
+function RecipeDetailPage() {
+  return (
+    <Suspense fallback={<RecipeDetailSkeleton />}>
+      <RecipeDetail />
+    </Suspense>
+  )
+}
 
 function RecipeDetail() {
   const { recipeId } = useParams({ from: Route.fullPath })
