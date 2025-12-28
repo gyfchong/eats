@@ -11,6 +11,8 @@ const recipeSchema = z.object({
   mealTypes: z.array(z.string()),
   ingredients: z.array(z.string()),
   notes: z.string().optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().url().optional().or(z.literal('')),
 })
 
 export function useRecipeForm(recipe: Doc<'recipes'> | undefined, onSuccess: () => void) {
@@ -25,6 +27,8 @@ export function useRecipeForm(recipe: Doc<'recipes'> | undefined, onSuccess: () 
       mealTypes: recipe?.mealTypes ?? [],
       ingredients: recipe?.ingredients ?? [],
       notes: recipe?.notes ?? '',
+      description: recipe?.description ?? '',
+      imageUrl: recipe?.imageUrl ?? '',
     },
     onSubmit: async ({ value }) => {
       // Validate with Zod

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import type { Doc } from '~convex/_generated/dataModel'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
@@ -6,7 +7,9 @@ import { Label } from '~/components/ui/label'
 import { Textarea } from '~/components/ui/textarea'
 import { MealTypeCheckboxGroup } from '~/components/MealTypeCheckboxGroup'
 import { DynamicTextList } from '~/components/DynamicTextList'
+import { LinkPreview } from '~/components/LinkPreview'
 import { useRecipeForm } from '~/hooks/useRecipeForm'
+import { useLinkPreview } from '~/hooks/useLinkPreview'
 
 interface RecipeFormProps {
   recipe?: Doc<'recipes'>
@@ -20,6 +23,47 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
     onSaved?.()
     onClose()
   })
+
+  // Track link value for preview
+  const [linkValue, setLinkValue] = useState(recipe?.link ?? '')
+
+  // Fetch link preview
+  const { preview, isLoading, error, refetch } = useLinkPreview(linkValue)
+
+  // Track if we've auto-filled from preview
+  const hasAutoFilledRef = useRef(false)
+
+  // Auto-fill name and description from preview (only once, and only for new recipes)
+  useEffect(() => {
+    if (!recipe && preview && !hasAutoFilledRef.current) {
+      const currentName = form.getFieldValue('name')
+      const currentDescription = form.getFieldValue('description')
+
+      if (!currentName && preview.title) {
+        form.setFieldValue('name', preview.title)
+      }
+      if (!currentDescription && preview.description) {
+        form.setFieldValue('description', preview.description)
+      }
+
+      hasAutoFilledRef.current = true
+    }
+  }, [preview, recipe, form])
+
+  // Store imageUrl in form when preview loads
+  useEffect(() => {
+    if (preview?.imageUrl) {
+      form.setFieldValue('imageUrl', preview.imageUrl)
+    }
+  }, [preview?.imageUrl, form])
+
+  // Reset auto-fill tracking when modal closes
+  useEffect(() => {
+    if (!open) {
+      hasAutoFilledRef.current = false
+      setLinkValue(recipe?.link ?? '')
+    }
+  }, [open, recipe?.link])
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -43,7 +87,10 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
                 <Input
                   id="link"
                   value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={(e) => {
+                    field.handleChange(e.target.value)
+                    setLinkValue(e.target.value)
+                  }}
                   onBlur={field.handleBlur}
                   placeholder="https://example.com/recipe"
                   className="mt-1"
@@ -54,6 +101,17 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
               </div>
             )}
           </form.Field>
+
+          {/* Link Preview */}
+          {linkValue && linkValue.startsWith('http') && (
+            <LinkPreview
+              preview={preview}
+              isLoading={isLoading}
+              error={error}
+              onRetry={refetch}
+              url={linkValue}
+            />
+          )}
 
           <form.Field name="name">
             {(field) => (
@@ -66,6 +124,23 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
                   onBlur={field.handleBlur}
                   placeholder="e.g., Chocolate Cake"
                   className="mt-1"
+                />
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="description">
+            {(field) => (
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={field.state.value ?? ''}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="Brief description of the recipe"
+                  className="mt-1"
+                  rows={2}
                 />
               </div>
             )}

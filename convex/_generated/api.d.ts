@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as linkPreview from "../linkPreview.js";
 import type * as recipes from "../recipes.js";
 import type * as restaurants from "../restaurants.js";
 import type * as seed from "../seed.js";
@@ -19,6 +20,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  linkPreview: typeof linkPreview;
   recipes: typeof recipes;
   restaurants: typeof restaurants;
   seed: typeof seed;
