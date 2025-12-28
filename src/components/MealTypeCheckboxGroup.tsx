@@ -1,7 +1,17 @@
 import { Checkbox } from '~/components/ui/checkbox'
 import { Label } from '~/components/ui/label'
 
-const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'dessert', 'sides', 'snacks', 'drinks'] as const
+const MEAL_TYPES = [
+  'breakfast',
+  'lunch',
+  'dinner',
+  'dessert',
+  'sides',
+  'snacks',
+  'drinks',
+  'savoury',
+  'sweet',
+] as const
 
 type MealType = (typeof MEAL_TYPES)[number]
 
@@ -20,22 +30,34 @@ interface MealTypeCheckboxGroupProps {
   label?: string
 }
 
-function ErrorMessages({ errors }: { errors: Array<string | { message: string } | undefined> }) {
+function ErrorMessages({
+  errors,
+}: {
+  errors: Array<string | { message: string } | undefined>
+}) {
   return (
     <>
       {errors.map((error) =>
         error ? (
-          <div key={typeof error === 'string' ? error : error.message} className="text-red-500 mt-1 font-bold text-sm">
+          <div
+            key={typeof error === 'string' ? error : error.message}
+            className="text-red-500 mt-1 font-bold text-sm"
+          >
             {typeof error === 'string' ? error : error.message}
           </div>
-        ) : null
+        ) : null,
       )}
     </>
   )
 }
 
-export function MealTypeCheckboxGroup({ field, label = 'Meal Types' }: MealTypeCheckboxGroupProps) {
-  const errors = (field.state.meta.errors ?? []) as Array<string | { message: string } | undefined>
+export function MealTypeCheckboxGroup({
+  field,
+  label = 'Meal Types',
+}: MealTypeCheckboxGroupProps) {
+  const errors = (field.state.meta.errors ?? []) as Array<
+    string | { message: string } | undefined
+  >
   const value = field.state.value || []
 
   const handleToggle = (mealType: MealType, checked: boolean) => {
@@ -64,17 +86,24 @@ export function MealTypeCheckboxGroup({ field, label = 'Meal Types' }: MealTypeC
             <Checkbox
               id={`meal-type-${mealType}`}
               checked={isChecked(mealType)}
-              onCheckedChange={(checked) => handleToggle(mealType, checked as boolean)}
+              onCheckedChange={(checked) =>
+                handleToggle(mealType, checked as boolean)
+              }
               onBlur={field.handleBlur}
             />
-            <Label htmlFor={`meal-type-${mealType}`} className="text-sm font-normal cursor-pointer capitalize">
+            <Label
+              htmlFor={`meal-type-${mealType}`}
+              className="text-sm font-normal cursor-pointer capitalize"
+            >
               {mealType}
             </Label>
           </div>
         ))}
       </div>
 
-      {field.state.meta.isTouched && errors.length > 0 && <ErrorMessages errors={errors} />}
+      {field.state.meta.isTouched && errors.length > 0 && (
+        <ErrorMessages errors={errors} />
+      )}
     </div>
   )
 }
