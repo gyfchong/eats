@@ -25,6 +25,7 @@ export default defineSchema({
     notes: v.optional(v.string()),
     description: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
     // Denormalized meal type fields for efficient filtering
     ...mealTypeFields,
   })
@@ -76,4 +77,29 @@ export default defineSchema({
       searchField: 'name',
       filterFields: ['isFavorite', 'cuisine', 'suburb'],
     }),
+
+  // Meal planning tables
+  recipeUsage: defineTable({
+    recipeId: v.id('recipes'),
+    mealPlanId: v.optional(v.id('mealPlans')),
+    madeAt: v.number(), // timestamp
+  })
+    .index('by_recipe', ['recipeId'])
+    .index('by_madeAt', ['madeAt']),
+
+  mealPlans: defineTable({
+    startDate: v.string(), // ISO date string (YYYY-MM-DD)
+    endDate: v.string(),
+    numDays: v.number(),
+    recipes: v.array(
+      v.object({
+        recipeId: v.id('recipes'),
+        assignedDay: v.optional(v.number()), // 1-indexed day number
+        isSide: v.boolean(),
+      }),
+    ),
+    status: v.union(v.literal('draft'), v.literal('active'), v.literal('completed')),
+  })
+    .index('by_startDate', ['startDate'])
+    .index('by_status', ['status']),
 })

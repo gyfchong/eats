@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { ChefHat, Utensils, Menu, X } from 'lucide-react'
+import { ChefHat, Utensils, Menu, X, Calendar } from 'lucide-react'
 
 import ConvexProvider from '../integrations/convex/provider'
 
@@ -57,6 +57,16 @@ function RootComponent() {
                     <Utensils className="size-4" />
                     Restaurants
                   </Link>
+                  <Link
+                    to="/meal-plans"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+                    activeProps={{
+                      className: 'text-primary font-semibold',
+                    }}
+                  >
+                    <Calendar className="size-4" />
+                    Meal Plans
+                  </Link>
                 </div>
 
                 {/* Mobile menu button */}
@@ -97,6 +107,17 @@ function RootComponent() {
                     >
                       <Utensils className="size-5" />
                       Restaurants
+                    </Link>
+                    <Link
+                      to="/meal-plans"
+                      className="flex items-center gap-3 p-4 rounded-xl text-lg bg-card border border-border/50 text-muted-foreground hover:text-primary transition-colors"
+                      activeProps={{
+                        className: 'text-primary font-semibold bg-primary/5 border-primary/20',
+                      }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Calendar className="size-5" />
+                      Meal Plans
                     </Link>
                   </div>
                 </div>

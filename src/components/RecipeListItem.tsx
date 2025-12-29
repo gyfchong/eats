@@ -1,8 +1,47 @@
 import { useState } from 'react'
-import { Heart, ExternalLink, Edit, Trash2, Image as ImageIcon } from 'lucide-react'
+import {
+  Heart,
+  ExternalLink,
+  Edit,
+  Trash2,
+  Image as ImageIcon,
+  ChefHat,
+  Play,
+} from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Button } from '~/components/ui/button'
+import { Badge } from '~/components/ui/badge'
 import type { Doc, Id } from '~convex/_generated/dataModel'
+
+// Tag configuration with labels and colors
+const TAG_CONFIG: Record<
+  string,
+  { label: string; icon: typeof ChefHat; className: string }
+> = {
+  home: {
+    label: 'Family Recipe',
+    icon: ChefHat,
+    className:
+      'bg-amber-500/10 text-amber-700 border-amber-500/30 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/40',
+  },
+  video: {
+    label: 'Video',
+    icon: Play,
+    className:
+      'bg-rose-500/10 text-rose-700 border-rose-500/30 dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/40',
+  },
+}
+
+/**
+ * Determine which placeholder icon to show based on recipe source
+ */
+function getRecipePlaceholderIcon(recipe: Doc<'recipes'>) {
+  if (!recipe.link) return ChefHat
+  if (recipe.link.includes('youtube.com') || recipe.link.includes('youtu.be')) {
+    return Play
+  }
+  return ImageIcon
+}
 
 interface RecipeListItemProps {
   recipe: Doc<'recipes'>
@@ -35,7 +74,12 @@ export function RecipeListItem({
           </div>
         ) : (
           <div className="shrink-0 w-24 sm:w-36 bg-muted/30 flex items-center justify-center aspect-square">
-            <ImageIcon className="size-8 text-muted-foreground/30" />
+            {(() => {
+              const PlaceholderIcon = getRecipePlaceholderIcon(recipe)
+              return (
+                <PlaceholderIcon className="size-8 text-muted-foreground/30" />
+              )
+            })()}
           </div>
         )}
 
@@ -61,6 +105,25 @@ export function RecipeListItem({
                   <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-1 hidden sm:block">
                     {recipe.description}
                   </p>
+                )}
+                {recipe.tags && recipe.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {recipe.tags.map((tag) => {
+                      const config = TAG_CONFIG[tag]
+                      if (!config) return null
+                      const TagIcon = config.icon
+                      return (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className={`text-[10px] sm:text-xs py-0.5 ${config.className}`}
+                        >
+                          <TagIcon className="size-3" />
+                          {config.label}
+                        </Badge>
+                      )
+                    })}
+                  </div>
                 )}
               </div>
               <Button

@@ -260,6 +260,7 @@ export const add = mutation({
     notes: v.optional(v.string()),
     description: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     // Validate link is not empty
@@ -277,6 +278,7 @@ export const add = mutation({
       notes: args.notes,
       description: args.description,
       imageUrl: args.imageUrl,
+      tags: args.tags || [],
       ...mealTypesToBooleans(args.mealTypes),
     })
   },
@@ -296,17 +298,13 @@ export const update = mutation({
     notes: v.optional(v.string()),
     description: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const recipe = await ctx.db.get(args.id)
 
     if (!recipe) {
       throw new Error('Recipe not found')
-    }
-
-    // Validate link is not empty
-    if (!args.link.trim()) {
-      throw new Error('Link is required')
     }
 
     return await ctx.db.patch(args.id, {
@@ -318,6 +316,7 @@ export const update = mutation({
       notes: args.notes,
       description: args.description,
       imageUrl: args.imageUrl,
+      tags: args.tags,
       ...mealTypesToBooleans(args.mealTypes),
     })
   },

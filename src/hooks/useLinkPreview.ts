@@ -31,6 +31,7 @@ export function useLinkPreview(url: string): UseLinkPreviewResult {
     async (targetUrl: string) => {
       // Skip if we already fetched this URL
       if (targetUrl === lastFetchedUrlRef.current && preview) {
+        setIsLoading(false)
         return
       }
 

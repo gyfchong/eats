@@ -1,15 +1,14 @@
 import { Suspense, useState, useDeferredValue } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { usePaginatedQuery } from 'convex/react'
-import { convexQuery, useConvexMutation } from '@convex-dev/react-query'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useConvexMutation } from '@convex-dev/react-query'
 import { api } from '~convex/_generated/api'
 import type { Doc, Id } from '~convex/_generated/dataModel'
 import { Button } from '~/components/ui/button'
 import { RecipeForm } from '~/components/RecipeForm'
 import { RecipeListItem } from '~/components/RecipeListItem'
 import { RecipeListSkeleton } from '~/components/RecipeListItemSkeleton'
-import { ListFilterBar } from '~/components/ListFilterBar'
+import { RecipeFilterBar, RecipeFilterBarSkeleton } from '~/components/RecipeFilterBar'
 import { useListFilters, type ListFilters } from '~/hooks/useListFilters'
 import { useInfiniteScroll } from '~/hooks/useInfiniteScroll'
 
@@ -48,8 +47,8 @@ function RecipesPage() {
         </Button>
       </div>
 
-      <Suspense fallback={<FilterBarSkeleton />}>
-        <RecipesFilterBar
+      <Suspense fallback={<RecipeFilterBarSkeleton />}>
+        <RecipeFilterBar
           filters={filters}
           updateFilter={updateFilter}
           resetFilters={resetFilters}
@@ -78,41 +77,6 @@ function RecipesPage() {
   )
 }
 
-function RecipesFilterBar({
-  filters,
-  updateFilter,
-  resetFilters,
-  hasActiveFilters,
-}: {
-  filters: ListFilters
-  updateFilter: <K extends keyof ListFilters>(key: K, value: ListFilters[K]) => void
-  resetFilters: () => void
-  hasActiveFilters: boolean
-}) {
-  const { data: cuisines } = useSuspenseQuery(
-    convexQuery(api.recipes.getCuisines, {}),
-  )
-  const { data: mealTypes } = useSuspenseQuery(
-    convexQuery(api.recipes.getMealTypes, {}),
-  )
-
-  return (
-    <ListFilterBar
-      searchQuery={filters.searchQuery}
-      favoritesOnly={filters.favoritesOnly}
-      cuisine={filters.cuisine}
-      mealType={filters.mealType}
-      cuisineOptions={cuisines}
-      mealTypeOptions={mealTypes}
-      onSearchChange={(v) => updateFilter('searchQuery', v)}
-      onFavoritesOnlyChange={(v) => updateFilter('favoritesOnly', v)}
-      onCuisineChange={(v) => updateFilter('cuisine', v)}
-      onMealTypeChange={(v) => updateFilter('mealType', v)}
-      onReset={resetFilters}
-      hasActiveFilters={hasActiveFilters}
-    />
-  )
-}
 
 interface RecipesListProps {
   filters: ListFilters
@@ -203,15 +167,3 @@ function RecipesList({ filters, onEdit }: RecipesListProps) {
   )
 }
 
-function FilterBarSkeleton() {
-  return (
-    <div className="space-y-4 mb-6 animate-pulse">
-      <div className="h-9 bg-muted rounded-md" />
-      <div className="flex gap-3">
-        <div className="h-6 w-24 bg-muted rounded" />
-        <div className="h-9 w-[150px] bg-muted rounded-md" />
-        <div className="h-9 w-[150px] bg-muted rounded-md" />
-      </div>
-    </div>
-  )
-}

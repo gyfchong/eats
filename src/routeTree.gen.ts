@@ -12,8 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RestaurantsIndexRouteImport } from './routes/restaurants/index'
 import { Route as RecipesIndexRouteImport } from './routes/recipes/index'
+import { Route as MealPlansIndexRouteImport } from './routes/meal-plans/index'
 import { Route as RestaurantsRestaurantIdRouteImport } from './routes/restaurants/$restaurantId'
 import { Route as RecipesRecipeIdRouteImport } from './routes/recipes/$recipeId'
+import { Route as MealPlansPlanIdRouteImport } from './routes/meal-plans/$planId'
+import { Route as MealPlansNewRouteRouteImport } from './routes/meal-plans/new/route'
+import { Route as MealPlansNewIndexRouteImport } from './routes/meal-plans/new/index'
+import { Route as MealPlansNewWizardIdRouteRouteImport } from './routes/meal-plans/new/$wizardId/route'
+import { Route as MealPlansNewWizardIdSidesRouteImport } from './routes/meal-plans/new/$wizardId/sides'
+import { Route as MealPlansNewWizardIdReviewRouteImport } from './routes/meal-plans/new/$wizardId/review'
+import { Route as MealPlansNewWizardIdRecipesRouteImport } from './routes/meal-plans/new/$wizardId/recipes'
+import { Route as MealPlansNewWizardIdDaysRouteImport } from './routes/meal-plans/new/$wizardId/days'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -30,6 +39,11 @@ const RecipesIndexRoute = RecipesIndexRouteImport.update({
   path: '/recipes/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MealPlansIndexRoute = MealPlansIndexRouteImport.update({
+  id: '/meal-plans/',
+  path: '/meal-plans/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RestaurantsRestaurantIdRoute = RestaurantsRestaurantIdRouteImport.update({
   id: '/restaurants/$restaurantId',
   path: '/restaurants/$restaurantId',
@@ -40,57 +54,157 @@ const RecipesRecipeIdRoute = RecipesRecipeIdRouteImport.update({
   path: '/recipes/$recipeId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MealPlansPlanIdRoute = MealPlansPlanIdRouteImport.update({
+  id: '/meal-plans/$planId',
+  path: '/meal-plans/$planId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MealPlansNewRouteRoute = MealPlansNewRouteRouteImport.update({
+  id: '/meal-plans/new',
+  path: '/meal-plans/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MealPlansNewIndexRoute = MealPlansNewIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MealPlansNewRouteRoute,
+} as any)
+const MealPlansNewWizardIdRouteRoute =
+  MealPlansNewWizardIdRouteRouteImport.update({
+    id: '/$wizardId',
+    path: '/$wizardId',
+    getParentRoute: () => MealPlansNewRouteRoute,
+  } as any)
+const MealPlansNewWizardIdSidesRoute =
+  MealPlansNewWizardIdSidesRouteImport.update({
+    id: '/sides',
+    path: '/sides',
+    getParentRoute: () => MealPlansNewWizardIdRouteRoute,
+  } as any)
+const MealPlansNewWizardIdReviewRoute =
+  MealPlansNewWizardIdReviewRouteImport.update({
+    id: '/review',
+    path: '/review',
+    getParentRoute: () => MealPlansNewWizardIdRouteRoute,
+  } as any)
+const MealPlansNewWizardIdRecipesRoute =
+  MealPlansNewWizardIdRecipesRouteImport.update({
+    id: '/recipes',
+    path: '/recipes',
+    getParentRoute: () => MealPlansNewWizardIdRouteRoute,
+  } as any)
+const MealPlansNewWizardIdDaysRoute =
+  MealPlansNewWizardIdDaysRouteImport.update({
+    id: '/days',
+    path: '/days',
+    getParentRoute: () => MealPlansNewWizardIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/meal-plans/new': typeof MealPlansNewRouteRouteWithChildren
+  '/meal-plans/$planId': typeof MealPlansPlanIdRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
+  '/meal-plans': typeof MealPlansIndexRoute
   '/recipes': typeof RecipesIndexRoute
   '/restaurants': typeof RestaurantsIndexRoute
+  '/meal-plans/new/$wizardId': typeof MealPlansNewWizardIdRouteRouteWithChildren
+  '/meal-plans/new/': typeof MealPlansNewIndexRoute
+  '/meal-plans/new/$wizardId/days': typeof MealPlansNewWizardIdDaysRoute
+  '/meal-plans/new/$wizardId/recipes': typeof MealPlansNewWizardIdRecipesRoute
+  '/meal-plans/new/$wizardId/review': typeof MealPlansNewWizardIdReviewRoute
+  '/meal-plans/new/$wizardId/sides': typeof MealPlansNewWizardIdSidesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/meal-plans/$planId': typeof MealPlansPlanIdRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
+  '/meal-plans': typeof MealPlansIndexRoute
   '/recipes': typeof RecipesIndexRoute
   '/restaurants': typeof RestaurantsIndexRoute
+  '/meal-plans/new/$wizardId': typeof MealPlansNewWizardIdRouteRouteWithChildren
+  '/meal-plans/new': typeof MealPlansNewIndexRoute
+  '/meal-plans/new/$wizardId/days': typeof MealPlansNewWizardIdDaysRoute
+  '/meal-plans/new/$wizardId/recipes': typeof MealPlansNewWizardIdRecipesRoute
+  '/meal-plans/new/$wizardId/review': typeof MealPlansNewWizardIdReviewRoute
+  '/meal-plans/new/$wizardId/sides': typeof MealPlansNewWizardIdSidesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/meal-plans/new': typeof MealPlansNewRouteRouteWithChildren
+  '/meal-plans/$planId': typeof MealPlansPlanIdRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
+  '/meal-plans/': typeof MealPlansIndexRoute
   '/recipes/': typeof RecipesIndexRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/meal-plans/new/$wizardId': typeof MealPlansNewWizardIdRouteRouteWithChildren
+  '/meal-plans/new/': typeof MealPlansNewIndexRoute
+  '/meal-plans/new/$wizardId/days': typeof MealPlansNewWizardIdDaysRoute
+  '/meal-plans/new/$wizardId/recipes': typeof MealPlansNewWizardIdRecipesRoute
+  '/meal-plans/new/$wizardId/review': typeof MealPlansNewWizardIdReviewRoute
+  '/meal-plans/new/$wizardId/sides': typeof MealPlansNewWizardIdSidesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/meal-plans/new'
+    | '/meal-plans/$planId'
     | '/recipes/$recipeId'
     | '/restaurants/$restaurantId'
+    | '/meal-plans'
     | '/recipes'
     | '/restaurants'
+    | '/meal-plans/new/$wizardId'
+    | '/meal-plans/new/'
+    | '/meal-plans/new/$wizardId/days'
+    | '/meal-plans/new/$wizardId/recipes'
+    | '/meal-plans/new/$wizardId/review'
+    | '/meal-plans/new/$wizardId/sides'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/meal-plans/$planId'
     | '/recipes/$recipeId'
     | '/restaurants/$restaurantId'
+    | '/meal-plans'
     | '/recipes'
     | '/restaurants'
+    | '/meal-plans/new/$wizardId'
+    | '/meal-plans/new'
+    | '/meal-plans/new/$wizardId/days'
+    | '/meal-plans/new/$wizardId/recipes'
+    | '/meal-plans/new/$wizardId/review'
+    | '/meal-plans/new/$wizardId/sides'
   id:
     | '__root__'
     | '/'
+    | '/meal-plans/new'
+    | '/meal-plans/$planId'
     | '/recipes/$recipeId'
     | '/restaurants/$restaurantId'
+    | '/meal-plans/'
     | '/recipes/'
     | '/restaurants/'
+    | '/meal-plans/new/$wizardId'
+    | '/meal-plans/new/'
+    | '/meal-plans/new/$wizardId/days'
+    | '/meal-plans/new/$wizardId/recipes'
+    | '/meal-plans/new/$wizardId/review'
+    | '/meal-plans/new/$wizardId/sides'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MealPlansNewRouteRoute: typeof MealPlansNewRouteRouteWithChildren
+  MealPlansPlanIdRoute: typeof MealPlansPlanIdRoute
   RecipesRecipeIdRoute: typeof RecipesRecipeIdRoute
   RestaurantsRestaurantIdRoute: typeof RestaurantsRestaurantIdRoute
+  MealPlansIndexRoute: typeof MealPlansIndexRoute
   RecipesIndexRoute: typeof RecipesIndexRoute
   RestaurantsIndexRoute: typeof RestaurantsIndexRoute
 }
@@ -118,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecipesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/meal-plans/': {
+      id: '/meal-plans/'
+      path: '/meal-plans'
+      fullPath: '/meal-plans'
+      preLoaderRoute: typeof MealPlansIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/restaurants/$restaurantId': {
       id: '/restaurants/$restaurantId'
       path: '/restaurants/$restaurantId'
@@ -132,13 +253,105 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecipesRecipeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/meal-plans/$planId': {
+      id: '/meal-plans/$planId'
+      path: '/meal-plans/$planId'
+      fullPath: '/meal-plans/$planId'
+      preLoaderRoute: typeof MealPlansPlanIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meal-plans/new': {
+      id: '/meal-plans/new'
+      path: '/meal-plans/new'
+      fullPath: '/meal-plans/new'
+      preLoaderRoute: typeof MealPlansNewRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meal-plans/new/': {
+      id: '/meal-plans/new/'
+      path: '/'
+      fullPath: '/meal-plans/new/'
+      preLoaderRoute: typeof MealPlansNewIndexRouteImport
+      parentRoute: typeof MealPlansNewRouteRoute
+    }
+    '/meal-plans/new/$wizardId': {
+      id: '/meal-plans/new/$wizardId'
+      path: '/$wizardId'
+      fullPath: '/meal-plans/new/$wizardId'
+      preLoaderRoute: typeof MealPlansNewWizardIdRouteRouteImport
+      parentRoute: typeof MealPlansNewRouteRoute
+    }
+    '/meal-plans/new/$wizardId/sides': {
+      id: '/meal-plans/new/$wizardId/sides'
+      path: '/sides'
+      fullPath: '/meal-plans/new/$wizardId/sides'
+      preLoaderRoute: typeof MealPlansNewWizardIdSidesRouteImport
+      parentRoute: typeof MealPlansNewWizardIdRouteRoute
+    }
+    '/meal-plans/new/$wizardId/review': {
+      id: '/meal-plans/new/$wizardId/review'
+      path: '/review'
+      fullPath: '/meal-plans/new/$wizardId/review'
+      preLoaderRoute: typeof MealPlansNewWizardIdReviewRouteImport
+      parentRoute: typeof MealPlansNewWizardIdRouteRoute
+    }
+    '/meal-plans/new/$wizardId/recipes': {
+      id: '/meal-plans/new/$wizardId/recipes'
+      path: '/recipes'
+      fullPath: '/meal-plans/new/$wizardId/recipes'
+      preLoaderRoute: typeof MealPlansNewWizardIdRecipesRouteImport
+      parentRoute: typeof MealPlansNewWizardIdRouteRoute
+    }
+    '/meal-plans/new/$wizardId/days': {
+      id: '/meal-plans/new/$wizardId/days'
+      path: '/days'
+      fullPath: '/meal-plans/new/$wizardId/days'
+      preLoaderRoute: typeof MealPlansNewWizardIdDaysRouteImport
+      parentRoute: typeof MealPlansNewWizardIdRouteRoute
+    }
   }
 }
 
+interface MealPlansNewWizardIdRouteRouteChildren {
+  MealPlansNewWizardIdDaysRoute: typeof MealPlansNewWizardIdDaysRoute
+  MealPlansNewWizardIdRecipesRoute: typeof MealPlansNewWizardIdRecipesRoute
+  MealPlansNewWizardIdReviewRoute: typeof MealPlansNewWizardIdReviewRoute
+  MealPlansNewWizardIdSidesRoute: typeof MealPlansNewWizardIdSidesRoute
+}
+
+const MealPlansNewWizardIdRouteRouteChildren: MealPlansNewWizardIdRouteRouteChildren =
+  {
+    MealPlansNewWizardIdDaysRoute: MealPlansNewWizardIdDaysRoute,
+    MealPlansNewWizardIdRecipesRoute: MealPlansNewWizardIdRecipesRoute,
+    MealPlansNewWizardIdReviewRoute: MealPlansNewWizardIdReviewRoute,
+    MealPlansNewWizardIdSidesRoute: MealPlansNewWizardIdSidesRoute,
+  }
+
+const MealPlansNewWizardIdRouteRouteWithChildren =
+  MealPlansNewWizardIdRouteRoute._addFileChildren(
+    MealPlansNewWizardIdRouteRouteChildren,
+  )
+
+interface MealPlansNewRouteRouteChildren {
+  MealPlansNewWizardIdRouteRoute: typeof MealPlansNewWizardIdRouteRouteWithChildren
+  MealPlansNewIndexRoute: typeof MealPlansNewIndexRoute
+}
+
+const MealPlansNewRouteRouteChildren: MealPlansNewRouteRouteChildren = {
+  MealPlansNewWizardIdRouteRoute: MealPlansNewWizardIdRouteRouteWithChildren,
+  MealPlansNewIndexRoute: MealPlansNewIndexRoute,
+}
+
+const MealPlansNewRouteRouteWithChildren =
+  MealPlansNewRouteRoute._addFileChildren(MealPlansNewRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MealPlansNewRouteRoute: MealPlansNewRouteRouteWithChildren,
+  MealPlansPlanIdRoute: MealPlansPlanIdRoute,
   RecipesRecipeIdRoute: RecipesRecipeIdRoute,
   RestaurantsRestaurantIdRoute: RestaurantsRestaurantIdRoute,
+  MealPlansIndexRoute: MealPlansIndexRoute,
   RecipesIndexRoute: RecipesIndexRoute,
   RestaurantsIndexRoute: RestaurantsIndexRoute,
 }
