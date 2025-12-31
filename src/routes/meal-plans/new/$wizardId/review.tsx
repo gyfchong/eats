@@ -9,7 +9,8 @@ import { WizardStep } from '~/components/WizardStep'
 import { PlanSummary } from '~/components/meal-plan/PlanSummary'
 import { PlanSummarySkeleton } from '~/components/meal-plan/Skeletons'
 import {
-  STEPS,
+  getStepNavigation,
+  STEP_PATHS,
   parseRecipeIds,
   calculateDateRange,
   calculateEndDate,
@@ -32,17 +33,16 @@ function ReviewStep() {
   const selectedRecipeIds = parseRecipeIds(recipeIds)
   const selectedSideIds = parseRecipeIds(sideIds)
   const dateRangeDisplay = calculateDateRange(startDate, numDays)
-
-  const currentStepIndex = STEPS.indexOf('review')
-  const totalSteps = STEPS.length
-  const canGoBack = currentStepIndex > 0
+  const nav = getStepNavigation('review')
 
   const goBack = () => {
-    navigate({
-      to: '/meal-plans/new/$wizardId/sides',
-      params: { wizardId },
-      search,
-    })
+    if (nav.prevStep) {
+      navigate({
+        to: STEP_PATHS[nav.prevStep],
+        params: { wizardId },
+        search,
+      })
+    }
   }
 
   const handleCreatePlan = async () => {
@@ -82,9 +82,9 @@ function ReviewStep() {
     <WizardStep
       title="Review Your Plan"
       subtitle="Everything look good? Let's create your meal plan!"
-      currentStep={currentStepIndex}
-      totalSteps={totalSteps}
-      canGoBack={canGoBack}
+      currentStep={nav.currentStep}
+      totalSteps={nav.totalSteps}
+      canGoBack={nav.canGoBack}
       canGoForward={false}
       onBack={goBack}
       onNext={() => {}}

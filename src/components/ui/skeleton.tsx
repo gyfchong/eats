@@ -117,4 +117,28 @@ function SkeletonText({
   )
 }
 
-export { Skeleton, SkeletonText }
+/**
+ * Renders a list of skeleton items with staggered fade-in animation.
+ * Useful for list loading states.
+ */
+function SkeletonList({
+  count,
+  children,
+  gap = 'gap-3 sm:gap-4',
+  className,
+}: {
+  count: number
+  children: (props: { index: number }) => React.ReactNode
+  gap?: string
+  className?: string
+}) {
+  return (
+    <div className={cn('flex flex-col', gap, className)}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i}>{children({ index: i })}</div>
+      ))}
+    </div>
+  )
+}
+
+export { Skeleton, SkeletonText, SkeletonList }

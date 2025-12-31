@@ -7,7 +7,7 @@ import type { Id } from '~convex/_generated/dataModel'
 import { WizardStep } from '~/components/WizardStep'
 import { RecipeSelector } from '~/components/meal-plan/RecipeSelector'
 import { RecipeSelectorSkeleton } from '~/components/meal-plan/Skeletons'
-import { STEPS, parseRecipeIds, type MealPlanSearch } from './wizard-utils'
+import { getStepNavigation, STEP_PATHS, parseRecipeIds, type MealPlanSearch } from './wizard-utils'
 
 const parentRoute = getRouteApi('/meal-plans/new/$wizardId')
 
@@ -22,11 +22,7 @@ function SidesStep() {
 
   const { sideIds } = search
   const selectedSideIds = parseRecipeIds(sideIds)
-
-  const currentStepIndex = STEPS.indexOf('sides')
-  const totalSteps = STEPS.length
-  const canGoBack = currentStepIndex > 0
-  const canGoForward = currentStepIndex < totalSteps - 1
+  const nav = getStepNavigation('sides')
 
   const updateSearch = (updates: Partial<MealPlanSearch>) => {
     navigate({
@@ -47,29 +43,33 @@ function SidesStep() {
   }
 
   const goBack = () => {
-    navigate({
-      to: '/meal-plans/new/$wizardId/recipes',
-      params: { wizardId },
-      search,
-    })
+    if (nav.prevStep) {
+      navigate({
+        to: STEP_PATHS[nav.prevStep],
+        params: { wizardId },
+        search,
+      })
+    }
   }
 
   const goNext = () => {
-    navigate({
-      to: '/meal-plans/new/$wizardId/review',
-      params: { wizardId },
-      search,
-    })
+    if (nav.nextStep) {
+      navigate({
+        to: STEP_PATHS[nav.nextStep],
+        params: { wizardId },
+        search,
+      })
+    }
   }
 
   return (
     <WizardStep
       title="Add Some Sides"
       subtitle="Optional: Pick some side dishes to complement your meals"
-      currentStep={currentStepIndex}
-      totalSteps={totalSteps}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
+      currentStep={nav.currentStep}
+      totalSteps={nav.totalSteps}
+      canGoBack={nav.canGoBack}
+      canGoForward={nav.canGoForward}
       onBack={goBack}
       onNext={goNext}
       nextLabel={

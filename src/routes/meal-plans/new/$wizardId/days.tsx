@@ -3,7 +3,8 @@ import { createFileRoute, getRouteApi, useNavigate } from '@tanstack/react-route
 import { WizardStep } from '~/components/WizardStep'
 import { DaySelector } from '~/components/meal-plan/DaySelector'
 import {
-  STEPS,
+  getStepNavigation,
+  STEP_PATHS,
   calculateDateRange,
   type MealPlanSearch,
 } from './wizard-utils'
@@ -22,11 +23,7 @@ function DaysStep() {
 
   const { numDays, startDate } = search
   const dateRangeDisplay = calculateDateRange(startDate, numDays)
-
-  const currentStepIndex = STEPS.indexOf('days')
-  const totalSteps = STEPS.length
-  const canGoBack = currentStepIndex > 0
-  const canGoForward = currentStepIndex < totalSteps - 1
+  const nav = getStepNavigation('days')
 
   const updateSearch = (updates: Partial<MealPlanSearch>) => {
     navigate({
@@ -46,10 +43,6 @@ function DaysStep() {
     updateSearch({ startDate: date })
   }
 
-  const goBack = () => {
-    // First step, can't go back
-  }
-
   const goNext = () => {
     setValidationError('')
 
@@ -62,22 +55,24 @@ function DaysStep() {
       return
     }
 
-    navigate({
-      to: '/meal-plans/new/$wizardId/recipes',
-      params: { wizardId },
-      search,
-    })
+    if (nav.nextStep) {
+      navigate({
+        to: STEP_PATHS[nav.nextStep],
+        params: { wizardId },
+        search,
+      })
+    }
   }
 
   return (
     <WizardStep
       title="Plan Your Week"
       subtitle="How many days would you like to plan for?"
-      currentStep={currentStepIndex}
-      totalSteps={totalSteps}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
-      onBack={goBack}
+      currentStep={nav.currentStep}
+      totalSteps={nav.totalSteps}
+      canGoBack={nav.canGoBack}
+      canGoForward={nav.canGoForward}
+      onBack={() => {}}
       onNext={goNext}
     >
       <DaySelector

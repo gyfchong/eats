@@ -1,15 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
+import { useForm } from '@tanstack/react-form'
+import { z } from 'zod'
+import { useConvexMutation } from '@convex-dev/react-query'
+import { api } from '~convex/_generated/api'
 import type { Doc } from '~convex/_generated/dataModel'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
-import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
-import { Textarea } from '~/components/ui/textarea'
+import { TextField, TextAreaField } from '~/components/ui/form-field'
 import { MealTypeCheckboxGroup } from '~/components/MealTypeCheckboxGroup'
 import { DynamicTextList } from '~/components/DynamicTextList'
 import { LinkPreview } from '~/components/LinkPreview'
-import { useRecipeForm } from '~/hooks/useRecipeForm'
 import { useLinkPreview } from '~/hooks/useLinkPreview'
+
+const recipeSchema = z.object({
+  link: z.string().url({ message: 'Please enter a valid URL' }),
+  name: z.string().optional(),
+  cuisine: z.string().optional(),
+  mealTypes: z.array(z.string()),
+  ingredients: z.array(z.string()),
+  notes: z.string().optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().url().optional().or(z.literal('')),
+})
 
 interface RecipeFormProps {
   recipe?: Doc<'recipes'>
@@ -19,9 +31,45 @@ interface RecipeFormProps {
 }
 
 export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) {
-  const form = useRecipeForm(recipe, () => {
-    onSaved?.()
-    onClose()
+  const addMutation = useConvexMutation(api.recipes.add)
+  const updateMutation = useConvexMutation(api.recipes.update)
+
+  const form = useForm({
+    defaultValues: {
+      link: recipe?.link ?? '',
+      name: recipe?.name ?? '',
+      cuisine: recipe?.cuisine ?? '',
+      mealTypes: recipe?.mealTypes ?? [],
+      ingredients: recipe?.ingredients ?? [],
+      notes: recipe?.notes ?? '',
+      description: recipe?.description ?? '',
+      imageUrl: recipe?.imageUrl ?? '',
+    },
+    onSubmit: async ({ value }) => {
+      const validated = recipeSchema.parse(value)
+      if (recipe) {
+        await updateMutation({ id: recipe._id, ...validated })
+      } else {
+        await addMutation(validated)
+      }
+      onSaved?.()
+      onClose()
+    },
+    onSubmitInvalid: ({ value, formApi }) => {
+      try {
+        recipeSchema.parse(value)
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          error.issues.forEach((issue) => {
+            const fieldName = issue.path.join('.') as keyof typeof value
+            formApi.setFieldMeta(fieldName, (prev) => ({
+              ...prev,
+              errors: [issue.message],
+            }))
+          })
+        }
+      }
+    },
   })
 
   // Track link value for preview
@@ -69,7 +117,9 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl sm:text-2xl">{recipe ? 'Edit Recipe' : 'Add Recipe'}</DialogTitle>
+          <DialogTitle className="font-display text-xl sm:text-2xl">
+            {recipe ? 'Edit Recipe' : 'Add Recipe'}
+          </DialogTitle>
         </DialogHeader>
 
         <form
@@ -82,23 +132,14 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
         >
           <form.Field name="link">
             {(field) => (
-              <div>
-                <Label htmlFor="link">Recipe Link *</Label>
-                <Input
-                  id="link"
-                  value={field.state.value}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value)
-                    setLinkValue(e.target.value)
-                  }}
-                  onBlur={field.handleBlur}
-                  placeholder="https://example.com/recipe"
-                  className="mt-1"
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <p className="text-red-500 text-sm mt-1">{field.state.meta.errors[0]}</p>
-                )}
-              </div>
+              <TextField
+                field={field}
+                label="Recipe Link"
+                placeholder="https://example.com/recipe"
+                type="url"
+                required
+                onChange={setLinkValue}
+              />
             )}
           </form.Field>
 
@@ -115,75 +156,59 @@ export function RecipeForm({ recipe, open, onClose, onSaved }: RecipeFormProps) 
 
           <form.Field name="name">
             {(field) => (
-              <div>
-                <Label htmlFor="name">Recipe Name</Label>
-                <Input
-                  id="name"
-                  value={field.state.value ?? ''}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="e.g., Chocolate Cake"
-                  className="mt-1"
-                />
-              </div>
+              <TextField
+                field={field}
+                label="Recipe Name"
+                placeholder="e.g., Chocolate Cake"
+              />
             )}
           </form.Field>
 
           <form.Field name="description">
             {(field) => (
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={field.state.value ?? ''}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="Brief description of the recipe"
-                  className="mt-1"
-                  rows={2}
-                />
-              </div>
+              <TextAreaField
+                field={field}
+                label="Description"
+                placeholder="Brief description of the recipe"
+                rows={2}
+              />
             )}
           </form.Field>
 
           <form.Field name="cuisine">
             {(field) => (
-              <div>
-                <Label htmlFor="cuisine">Cuisine</Label>
-                <Input
-                  id="cuisine"
-                  value={field.state.value ?? ''}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="e.g., Italian"
-                  className="mt-1"
-                />
-              </div>
+              <TextField
+                field={field}
+                label="Cuisine"
+                placeholder="e.g., Italian"
+              />
             )}
           </form.Field>
 
           <form.Field name="mealTypes">
-            {(field) => <MealTypeCheckboxGroup field={field} label="Meal Types" />}
+            {(field) => (
+              <MealTypeCheckboxGroup field={field} label="Meal Types" />
+            )}
           </form.Field>
 
           <form.Field name="ingredients">
-            {(field) => <DynamicTextList field={field} label="Ingredients" placeholder="Enter ingredient" />}
+            {(field) => (
+              <DynamicTextList
+                field={field}
+                label="Ingredients"
+                placeholder="Enter ingredient"
+              />
+            )}
           </form.Field>
 
           <form.Field name="notes">
             {(field) => (
-              <div>
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={field.state.value ?? ''}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="Additional notes about the recipe"
-                  className="mt-1"
-                  rows={3}
-                />
-              </div>
+              <TextAreaField
+                field={field}
+                label="Notes"
+                placeholder="Additional notes about the recipe"
+                rows={3}
+              />
             )}
           </form.Field>
 

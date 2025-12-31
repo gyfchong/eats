@@ -57,6 +57,28 @@ export type MealPlanSearch = z.infer<typeof mealPlanSearchSchema>
 export const STEPS = ['days', 'recipes', 'sides', 'review'] as const
 export type Step = (typeof STEPS)[number]
 
+// Step paths for navigation
+export const STEP_PATHS: Record<Step, string> = {
+  days: '/meal-plans/new/$wizardId/days',
+  recipes: '/meal-plans/new/$wizardId/recipes',
+  sides: '/meal-plans/new/$wizardId/sides',
+  review: '/meal-plans/new/$wizardId/review',
+}
+
+// Get navigation state for a given step
+export function getStepNavigation(step: Step) {
+  const currentStep = STEPS.indexOf(step)
+  const totalSteps = STEPS.length
+  return {
+    currentStep,
+    totalSteps,
+    canGoBack: currentStep > 0,
+    canGoForward: currentStep < totalSteps - 1,
+    prevStep: currentStep > 0 ? STEPS[currentStep - 1] : null,
+    nextStep: currentStep < totalSteps - 1 ? STEPS[currentStep + 1] : null,
+  }
+}
+
 // Parse comma-separated IDs from URL
 export function parseRecipeIds(recipeIds: string | undefined): Id<'recipes'>[] {
   return recipeIds

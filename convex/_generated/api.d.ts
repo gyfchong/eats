@@ -16,6 +16,7 @@ import type * as restaurants from "../restaurants.js";
 import type * as seed from "../seed.js";
 import type * as updateRecipeImages from "../updateRecipeImages.js";
 import type * as updateRecipeLogos from "../updateRecipeLogos.js";
+import type * as utils_mealTypes from "../utils/mealTypes.js";
 
 import type {
   ApiFromModules,
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   updateRecipeImages: typeof updateRecipeImages;
   updateRecipeLogos: typeof updateRecipeLogos;
+  "utils/mealTypes": typeof utils_mealTypes;
 }>;
 
 /**

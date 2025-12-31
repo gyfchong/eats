@@ -1,11 +1,22 @@
+import { useForm } from '@tanstack/react-form'
+import { z } from 'zod'
+import { useConvexMutation } from '@convex-dev/react-query'
+import { api } from '~convex/_generated/api'
 import type { Doc } from '~convex/_generated/dataModel'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '~/components/ui/dialog'
 import { Button } from '~/components/ui/button'
-import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
+import { TextField } from '~/components/ui/form-field'
 import { MealTypeCheckboxGroup } from '~/components/MealTypeCheckboxGroup'
 import { DynamicDishList } from '~/components/DynamicDishList'
-import { useRestaurantForm } from '~/hooks/useRestaurantForm'
+
+const restaurantSchema = z.object({
+  link: z.string().url({ message: 'Please enter a valid URL' }),
+  name: z.string().optional(),
+  suburb: z.string().min(1, 'Suburb is required'),
+  cuisine: z.string().optional(),
+  mealTypes: z.array(z.string()),
+  dishes: z.array(z.object({ name: z.string(), rating: z.number().optional() })),
+})
 
 interface RestaurantFormProps {
   restaurant?: Doc<'restaurants'>
@@ -15,16 +26,52 @@ interface RestaurantFormProps {
 }
 
 export function RestaurantForm({ restaurant, open, onClose, onSaved }: RestaurantFormProps) {
-  const form = useRestaurantForm(restaurant, () => {
-    onSaved?.()
-    onClose()
+  const addMutation = useConvexMutation(api.restaurants.add)
+  const updateMutation = useConvexMutation(api.restaurants.update)
+
+  const form = useForm({
+    defaultValues: {
+      link: restaurant?.link ?? '',
+      name: restaurant?.name ?? '',
+      suburb: restaurant?.suburb ?? '',
+      cuisine: restaurant?.cuisine ?? '',
+      mealTypes: restaurant?.mealTypes ?? [],
+      dishes: restaurant?.dishes ?? [],
+    },
+    onSubmit: async ({ value }) => {
+      const validated = restaurantSchema.parse(value)
+      if (restaurant) {
+        await updateMutation({ id: restaurant._id, ...validated })
+      } else {
+        await addMutation(validated)
+      }
+      onSaved?.()
+      onClose()
+    },
+    onSubmitInvalid: ({ value, formApi }) => {
+      try {
+        restaurantSchema.parse(value)
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          error.issues.forEach((issue) => {
+            const fieldName = issue.path.join('.') as keyof typeof value
+            formApi.setFieldMeta(fieldName, (prev) => ({
+              ...prev,
+              errors: [issue.message],
+            }))
+          })
+        }
+      }
+    },
   })
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl sm:text-2xl">{restaurant ? 'Edit Restaurant' : 'Add Restaurant'}</DialogTitle>
+          <DialogTitle className="font-display text-xl sm:text-2xl">
+            {restaurant ? 'Edit Restaurant' : 'Add Restaurant'}
+          </DialogTitle>
         </DialogHeader>
 
         <form
@@ -37,76 +84,51 @@ export function RestaurantForm({ restaurant, open, onClose, onSaved }: Restauran
         >
           <form.Field name="link">
             {(field) => (
-              <div>
-                <Label htmlFor="link">Restaurant Link *</Label>
-                <Input
-                  id="link"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="https://example.com"
-                  className="mt-1"
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <p className="text-red-500 text-sm mt-1">{field.state.meta.errors[0]}</p>
-                )}
-              </div>
+              <TextField
+                field={field}
+                label="Restaurant Link"
+                placeholder="https://example.com"
+                type="url"
+                required
+              />
             )}
           </form.Field>
 
           <form.Field name="name">
             {(field) => (
-              <div>
-                <Label htmlFor="name">Restaurant Name</Label>
-                <Input
-                  id="name"
-                  value={field.state.value ?? ''}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="e.g., Mario's Pizzeria"
-                  className="mt-1"
-                />
-              </div>
+              <TextField
+                field={field}
+                label="Restaurant Name"
+                placeholder="e.g., Mario's Pizzeria"
+              />
             )}
           </form.Field>
 
           <form.Field name="suburb">
             {(field) => (
-              <div>
-                <Label htmlFor="suburb">Suburb *</Label>
-                <Input
-                  id="suburb"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="e.g., North Melbourne"
-                  className="mt-1"
-                />
-                {field.state.meta.errors.length > 0 && (
-                  <p className="text-red-500 text-sm mt-1">{field.state.meta.errors[0]}</p>
-                )}
-              </div>
+              <TextField
+                field={field}
+                label="Suburb"
+                placeholder="e.g., North Melbourne"
+                required
+              />
             )}
           </form.Field>
 
           <form.Field name="cuisine">
             {(field) => (
-              <div>
-                <Label htmlFor="cuisine">Cuisine</Label>
-                <Input
-                  id="cuisine"
-                  value={field.state.value ?? ''}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  placeholder="e.g., Italian"
-                  className="mt-1"
-                />
-              </div>
+              <TextField
+                field={field}
+                label="Cuisine"
+                placeholder="e.g., Italian"
+              />
             )}
           </form.Field>
 
           <form.Field name="mealTypes">
-            {(field) => <MealTypeCheckboxGroup field={field} label="Meal Types" />}
+            {(field) => (
+              <MealTypeCheckboxGroup field={field} label="Meal Types" />
+            )}
           </form.Field>
 
           <form.Field name="dishes">

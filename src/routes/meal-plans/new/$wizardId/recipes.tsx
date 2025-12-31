@@ -7,7 +7,7 @@ import type { Id } from '~convex/_generated/dataModel'
 import { WizardStep } from '~/components/WizardStep'
 import { RecipeSelector } from '~/components/meal-plan/RecipeSelector'
 import { RecipeSelectorSkeleton } from '~/components/meal-plan/Skeletons'
-import { STEPS, parseRecipeIds, type MealPlanSearch } from './wizard-utils'
+import { getStepNavigation, STEP_PATHS, parseRecipeIds, type MealPlanSearch } from './wizard-utils'
 
 const parentRoute = getRouteApi('/meal-plans/new/$wizardId')
 
@@ -23,11 +23,7 @@ function RecipesStep() {
 
   const { recipeIds } = search
   const selectedRecipeIds = parseRecipeIds(recipeIds)
-
-  const currentStepIndex = STEPS.indexOf('recipes')
-  const totalSteps = STEPS.length
-  const canGoBack = currentStepIndex > 0
-  const canGoForward = currentStepIndex < totalSteps - 1
+  const nav = getStepNavigation('recipes')
 
   const updateSearch = (updates: Partial<MealPlanSearch>) => {
     navigate({
@@ -49,11 +45,13 @@ function RecipesStep() {
   }
 
   const goBack = () => {
-    navigate({
-      to: '/meal-plans/new/$wizardId/days',
-      params: { wizardId },
-      search,
-    })
+    if (nav.prevStep) {
+      navigate({
+        to: STEP_PATHS[nav.prevStep],
+        params: { wizardId },
+        search,
+      })
+    }
   }
 
   const goNext = () => {
@@ -64,21 +62,23 @@ function RecipesStep() {
       return
     }
 
-    navigate({
-      to: '/meal-plans/new/$wizardId/sides',
-      params: { wizardId },
-      search,
-    })
+    if (nav.nextStep) {
+      navigate({
+        to: STEP_PATHS[nav.nextStep],
+        params: { wizardId },
+        search,
+      })
+    }
   }
 
   return (
     <WizardStep
       title="Choose Your Dishes"
       subtitle="Select the recipes you want to make this week"
-      currentStep={currentStepIndex}
-      totalSteps={totalSteps}
-      canGoBack={canGoBack}
-      canGoForward={canGoForward}
+      currentStep={nav.currentStep}
+      totalSteps={nav.totalSteps}
+      canGoBack={nav.canGoBack}
+      canGoForward={nav.canGoForward}
       onBack={goBack}
       onNext={goNext}
       nextLabel={`Continue with ${selectedRecipeIds.length} recipe${selectedRecipeIds.length !== 1 ? 's' : ''}`}
